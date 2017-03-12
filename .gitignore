@@ -1,0 +1,12 @@
+Makefile
+autom4te.cache/
+autoscan.log
+config.log
+config.status
+configure
+cmdalias
+src/*.o
+src/lexer.c
+src/parser.c
+src/parser.h
+include/config.h

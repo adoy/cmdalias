@@ -1,0 +1,30 @@
+NAME = cmdalias
+SRC = src/cmdalias.c src/alias.c src/list.c src/parser.c src/lexer.c
+OBJ = $(SRC:.c=.o)
+CFLAGS = -I./include @CFLAGS@
+LDFLAGS= @LDFLAGS@ @LIBS@
+
+
+CC=@CC@
+YACC=@YACC@
+LEX=@LEX@
+
+${NAME}: ${OBJ}
+	${CC} ${CFLAGS} ${CPPFLAGS} ${OBJ} -o ${NAME} ${LDFLAGS}
+
+build: ${NAME}
+	${CC} ${CFLAGS} ${CPPFLAGS} ${NAME} -c ${OBJ} ${LDFLAGS}
+
+src/parser.c: src/parser.y
+	$(YACC) -d $^ -o$@
+
+src/lexer.c: src/lexer.l
+	$(LEX) $(LFLAGS) -o$@ $^
+
+clean:
+	rm -f ${OBJ} *~ src/parser.c src/parser.h src/lexer.c
+	rm -f ${NAME}
+
+distclean: clean
+	find . -name '*.in' | sed 's#\.in##g' | xargs rm -f
+	rm -f ${NAME} config.log config.status
