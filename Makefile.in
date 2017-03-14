@@ -1,7 +1,7 @@
 NAME = cmdalias
 SRC = src/cmdalias.c src/alias.c src/list.c src/parser.c src/lexer.c
 OBJ = $(SRC:.c=.o)
-CFLAGS = -I./include @CFLAGS@
+CFLAGS = -I./include -g @CFLAGS@
 LDFLAGS= @LDFLAGS@ @LIBS@
 
 

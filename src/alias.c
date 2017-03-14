@@ -36,10 +36,12 @@ int alias_execute(cmdalias_config *conf, int argc, char **argv) {
 	int i;
 	alias *a;
 	alias_list *aliases = NULL;
+	alias_list *global  = NULL;
 
 	command *cmd = get_cmd(conf->commands, argv[0]);
 	if (cmd) {
 		aliases = cmd->aliases;
+		global  = cmd->global;
 	}
 	args[args_c++] = argv[0];
 
@@ -58,7 +60,7 @@ int alias_execute(cmdalias_config *conf, int argc, char **argv) {
 			}
 
 			aliases = a->subaliases;
-		} else if ((a = get_alias(cmd->global, argv[i]))) {
+		} else if ((a = get_alias(global, argv[i]))) {
 			string_list *str_list = a->substitutes;
 			while (str_list) {
 				args[args_c++] = str_list->data;
