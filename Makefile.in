@@ -4,10 +4,13 @@ OBJ = $(SRC:.c=.o)
 CFLAGS = -I./include -g @CFLAGS@
 LDFLAGS= @LDFLAGS@ @LIBS@
 
+prefix = @prefix@
 
 CC=@CC@
 YACC=@YACC@
 LEX=@LEX@
+
+.PHONY: install uninstall
 
 ${NAME}: ${OBJ}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${OBJ} -o ${NAME} ${LDFLAGS}
@@ -28,3 +31,10 @@ clean:
 distclean: clean
 	find . -name '*.in' | sed 's#\.in##g' | xargs rm -f
 	rm -f ${NAME} config.log config.status
+
+install: cmdalias
+	cp cmdalias ${prefix}/bin
+	chmod a+x ${prefix}/bin/cmdalias
+
+uninstall:
+	rm -f ${prefix}/bin/cmdalias
