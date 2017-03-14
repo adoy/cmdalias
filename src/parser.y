@@ -120,11 +120,23 @@ include:
 ;
 
 config:
-		T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+		alias_name_list '=' T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+			cmdalias_config *cfg = (cmdalias_config *) config;
+
+			command *cmd = (command *) malloc(sizeof(command));
+			cmd->name = $3;
+			cmd->name_aliases = $1;
+			cmd->global = $5;
+			cmd->aliases = $6;
+
+			cfg->commands = command_list_append(cfg->commands, cmd);
+		}
+	|	T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
 			cmdalias_config *cfg = (cmdalias_config *) config;
 
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $1;
+			cmd->name_aliases = NULL;
 			cmd->global = $3;
 			cmd->aliases = $4;
 

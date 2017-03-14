@@ -28,6 +28,7 @@ typedef struct alias_list_t {
 
 typedef struct command_t {
 	char *name;
+	string_list *name_aliases;
 	alias_list *global;
 	alias_list *aliases;
 } command;
