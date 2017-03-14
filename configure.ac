@@ -33,9 +33,6 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memset strdup])
 
-AC_CHECK_LIB([fl], [yywrap])
-
-
 AC_ARG_ENABLE([debug], AS_HELP_STRING([--enable-debug], [Enable the debug mode]))
 AC_MSG_CHECKING([if the debug mode is enabled])
 AS_IF([test "x$enable_debug" = "xyes"], [
