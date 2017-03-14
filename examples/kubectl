@@ -1,0 +1,15 @@
+kubectl {
+	* {
+		p = pods;
+		i = ingress;
+		s = svc;
+		d = deploy;
+		-a = --all-namespaces;
+		-json = -o json;
+		-yaml = -o yaml;
+	}
+	gc = config get-contexts;
+	uc = config use-context;
+	g = get;
+	d = describe;
+}
