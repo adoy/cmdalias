@@ -159,25 +159,20 @@ int cmdalias_config_load(const char *filename, cmdalias_config *config) {
 		filename = buffer;
 	}
 
-	debug_msg("Loading config %s...", buffer);
+	debug_msg("Loading config %s... ", buffer);
 	if ((f = fopen(filename, "r"))) {
 		cmdalias_config_destroy(config);
 		cmdalias_config_init(config);
 		cmdalias_config_pushfile(filename);
 		if (yyparse(config)) {
-			cmdalias_config_end();
 			fclose(f);
 			return 0;
 		}
-		cmdalias_config_end();
 		fclose(f);
-		debug_msg(" OK\n");
+		debug_msg("OK\n");
 		return 1;
 	} else {
 		fprintf(stderr, "Unable to load config file '%s'\n", filename);
 		return 0;
 	}
-}
-
-void cmdalias_config_end() {
 }
