@@ -14,5 +14,6 @@ void cmdalias_config_init(cmdalias_config *);
 int cmdalias_config_load(const char *, cmdalias_config *);
 void cmdalias_config_destroy(cmdalias_config *);
 void cmdalias_config_end();
+char *cmdalias_config_get_current_filename(void);
 
 #endif /* _CONFIG_LEXER_H_ */

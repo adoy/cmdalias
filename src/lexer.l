@@ -55,6 +55,14 @@ int cmdalias_config_popfile(void) {
 	return 1;
 }
 
+char *cmdalias_config_get_current_filename(void) {
+	if (curbs) {
+		return curbs->filename;
+	}
+
+	return NULL;
+}
+
 %}
 
 %%

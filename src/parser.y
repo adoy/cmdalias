@@ -12,12 +12,13 @@
 
 void yyerror(const char *s, ...) {
 	extern int yylineno;
+
 	va_list ap;
 	va_start(ap, s);
 
 	fprintf(stderr, "Error: ");
 	vfprintf(stderr, s, ap);
-	fprintf(stderr, " on line %d\n", yylineno);
+	fprintf(stderr, " in '%s' on line %d\n", cmdalias_config_get_current_filename(), yylineno);
 	fflush(stderr);
 }
 
@@ -34,36 +35,45 @@ void yyerror(const char *s, ...) {
 }
 
 %token <str>  T_NAME "Name (T_NAME)"
-%token <str>  T_STR "String (T_STRING)"
-%token T_INCLUDE    "Include (T_INCLUDE)"
+%token <str>  T_STR  "String (T_STR)"
+%token T_INCLUDE     "Include (T_INCLUDE)"
 
 %type <str> string
 %type <str_list> string_list alias_name_list
 %type <alias> alias
 %type <alias_list> global_alias_list_or_empty alias_list_or_empty alias_list
-%type <cmd> config
-%type <cmd_list> configs configs_or_empty
 %type <mbool> is_cmd
 
 %%
 
 configs_or_empty:
-		configs { ((cmdalias_config *)config)->commands = $1; }
-	|	/* empty */ { $$ = NULL; }
+		configs
+	|	/* empty */
 ;
 
 configs:
-		configs config { $$ = command_list_append($1, $2); }
-	|	config { $$ = command_list_append(NULL, $1); }
+		configs config
+	|	configs include
+	|	config
+	|	include
+;
+
+include:
+		T_INCLUDE T_STR ';' { if (!cmdalias_config_pushfile($2)) yyerror("Unable to load %s", $2); free($2); }
 ;
 
 config:
 		T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
-			$$ = (command *) malloc(sizeof(command));
-			$$->name = $1;
-			$$->global = $3;
-			$$->aliases = $4;
+			cmdalias_config *cfg = (cmdalias_config *) config;
+
+			command *cmd = (command *) malloc(sizeof(command));
+			cmd->name = $1;
+			cmd->global = $3;
+			cmd->aliases = $4;
+
+			cfg->commands = command_list_append(cfg->commands, cmd);
 		}
+
 ;
 
 global_alias_list_or_empty:
