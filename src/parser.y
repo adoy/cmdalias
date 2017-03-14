@@ -1,8 +1,13 @@
 %{
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+
 
 #include "cmdalias.h"
 #include "lexer.h"
@@ -22,6 +27,53 @@ void yyerror(const char *s, ...) {
 	fflush(stderr);
 }
 
+int is_dir(const char *path) {
+	struct stat st;
+
+	if (lstat(path, &st) == -1) {
+		return -1;
+	}
+
+	return S_ISDIR(st.st_mode);
+}
+
+int cmdalias_config_pushdir(const char *dirname) {
+	struct dirent *dent;
+	DIR *dir;
+	char fn[FILENAME_MAX];
+	int len = strlen(dirname);
+
+	if (len >= FILENAME_MAX - 1) {
+		/* Name too long */
+		return 0;
+	}
+
+	strcpy(fn, dirname);
+	fn[len++] = '/';
+
+	if (!(dir = opendir(dirname))) {
+		/* Can't open directory */
+		return 0;
+	}
+
+	while ((dent = readdir(dir))) {
+		if (dent->d_name[0] == '.') continue;
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) continue;
+
+		strncpy(fn + len, dent->d_name, FILENAME_MAX - len);
+
+		if (is_dir(fn)) {
+			cmdalias_config_pushdir(fn);
+			continue;
+		}
+
+		cmdalias_config_pushfile(fn);
+	}
+
+	if (dir) closedir(dir);
+
+	return 1;
+}
 %}
 
 %union {
@@ -59,7 +111,12 @@ configs:
 ;
 
 include:
-		T_INCLUDE T_STR ';' { if (!cmdalias_config_pushfile($2)) yyerror("Unable to load %s", $2); free($2); }
+		T_INCLUDE T_STR ';' {
+			if (!(is_dir($2) ? cmdalias_config_pushdir($2) : cmdalias_config_pushfile($2))) {
+				yyerror("Unable to load %s", $2);
+			}
+			free($2);
+		}
 ;
 
 config:
@@ -94,22 +151,22 @@ alias_list:
 alias:
 		alias_name_list '=' is_cmd string_list ';' {
 			$$ = (alias *) malloc(sizeof(alias));
-			$$->names       = $1;
-			$$->is_cmd      = $3;
+			$$->names		= $1;
+			$$->is_cmd		= $3;
 			$$->substitutes = $4;
 			$$->subaliases  = NULL;
 		}
 	|	alias_name_list '=' is_cmd string_list '{' alias_list_or_empty '}' end {
 			$$ = (alias *) malloc(sizeof(alias));
-			$$->names       = $1;
-			$$->is_cmd      = $3;
+			$$->names		= $1;
+			$$->is_cmd		= $3;
 			$$->substitutes = $4;
 			$$->subaliases  = $6;
 		}
-    |  T_NAME '{' alias_list_or_empty '}' end {
+	|  T_NAME '{' alias_list_or_empty '}' end {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names 		= string_list_append(NULL, $1);
-			$$->is_cmd      = 0;
+			$$->is_cmd		= 0;
 			$$->substitutes = string_list_append(NULL, $1);
 			$$->subaliases  = $3;
 		}
@@ -151,28 +208,24 @@ void cmdalias_config_destroy(cmdalias_config *config) {
 	command_list_free_all(config->commands);
 }
 
-int cmdalias_config_load(const char *filename, cmdalias_config *config) {
-	FILE *f;
-	char buffer[255];
-	if (!filename) {
+int cmdalias_config_load(const char *path, cmdalias_config *config) {
+
+	if (!path) {
+		char buffer[255];
 		snprintf(buffer, 255, "%s/.cmdalias", getenv("HOME"));
-		filename = buffer;
+		path = buffer;
 	}
 
-	debug_msg("Loading config %s... ", buffer);
-	if ((f = fopen(filename, "r"))) {
-		cmdalias_config_destroy(config);
-		cmdalias_config_init(config);
-		cmdalias_config_pushfile(filename);
-		if (yyparse(config)) {
-			fclose(f);
-			return 0;
-		}
-		fclose(f);
-		debug_msg("OK\n");
-		return 1;
-	} else {
-		fprintf(stderr, "Unable to load config file '%s'\n", filename);
+	cmdalias_config_destroy(config);
+	cmdalias_config_init(config);
+
+	if (!(is_dir(path) ? cmdalias_config_pushdir(path) : cmdalias_config_pushfile(path))) {
 		return 0;
 	}
+
+	if (yyparse(config)) {
+		return 0;
+	}
+
+	return 1;
 }

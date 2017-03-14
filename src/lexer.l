@@ -1,4 +1,4 @@
-%option never-interactive case-insensitive warn nodefault noinput nounput yylineno
+%option never-interactive case-insensitive warn nodefault noinput nounput yylineno noyywrap
 
 %{
 #include <string.h>
@@ -22,6 +22,8 @@ int cmdalias_config_pushfile(const char *filename) {
 
 	if (!f || !bs) return 0;
 
+	debug_msg("Loading config file: %s\n", filename);
+
 	if (curbs) curbs->lineno = yylineno;
 	bs->prev = curbs;
 	bs->bs = yy_create_buffer(f, YY_BUF_SIZE);
@@ -38,6 +40,7 @@ int cmdalias_config_popfile(void) {
 	struct cmdalias_config_bufstack_t *bs = curbs;
 	struct cmdalias_config_bufstack_t *prevbs;
 
+
 	if (!bs) return 0;
 
 	fclose(bs->f);
@@ -46,7 +49,10 @@ int cmdalias_config_popfile(void) {
 	free(bs->filename);
 	free(bs);
 
-	if (!prevbs) return 0;
+	if (!prevbs) {
+		curbs = NULL;
+		return 0;
+	}
 
 	yy_switch_to_buffer(prevbs->bs);
 	curbs = prevbs;
@@ -67,12 +73,12 @@ char *cmdalias_config_get_current_filename(void) {
 
 %%
 
-<<EOF>>			{ if (!cmdalias_config_popfile()) yyterminate(); }
-\"(\\.|[^\\"])*\" { yytext[yyleng-1] = 0; yylval.str = strdup(yytext+1); return T_STR; }
-INCLUDE         { return T_INCLUDE; }
-[-_0-9A-Za-z]+  { yylval.str = strdup(yytext); return T_NAME; }
-[ \t\r\n]+		{ /* IGNORE */ }
-#.*		    	{ /* COMMENTS */ }
-.				{ return yytext[0]; }
+<<EOF>>				{ if (!cmdalias_config_popfile()) yyterminate(); }
+\"(\\.|[^\\"])*\"	{ yytext[yyleng-1] = 0; yylval.str = strdup(yytext+1); return T_STR; }
+INCLUDE				{ return T_INCLUDE; }
+[-_0-9A-Za-z]+		{ yylval.str = strdup(yytext); return T_NAME; }
+[ \t\r\n]+			{ /* IGNORE */ }
+#.*					{ /* COMMENTS */ }
+.					{ return yytext[0]; }
 
 %%

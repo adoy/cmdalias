@@ -8,7 +8,7 @@
 
 static void display_usage() {
 	puts("Usage: ./cmdalias [OPTION] -- <command> [args...] ");
-	puts("  -c, --config=FILE       Use FILE as the configuration file (default: ~/.cmdalias)");
+	puts("  -c, --config=CONF       Configuration file or directory (default: ~/.cmdalias)");
 	puts("  -h, --help              Display this help");
 	puts("  -V, --version           Display version");
 	puts("      --check-config      Check the configuration file");
