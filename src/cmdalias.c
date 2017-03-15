@@ -9,7 +9,8 @@
 static void display_usage() {
 	puts("Usage: ./cmdalias [OPTION] -- <command> [args...] ");
 	puts("  -c, --config=CONF       Configuration file or directory (default: ~/.cmdalias)");
-	puts("  -i, --init              Init");
+	puts("  -i, --init              Use this option to add in your bash profile and initialize your aliases");
+	puts("                          source<(cmdalias -i)");
 	puts("  -h, --help              Display this help");
 	puts("  -V, --version           Display version");
 	puts("      --check-config      Check the configuration file");
@@ -18,72 +19,72 @@ static void display_usage() {
 }
 
 static void display_version() {
-	puts("CmdAlias " CMDALIAS_VERSION " (c)2017 Adoy.net");
+	puts("CmdAlias " CMDALIAS_VERSION " (c)2017 Pierrick Charron - Adoy.net");
 	exit(EXIT_FAILURE);
 }
 
 static void check_config(const char *configFile) {
 	int exit_status;
-	cmdalias_config config;
-	cmdalias_config_init(&config);
-	if (cmdalias_config_load(configFile, &config)) {
+	command_list *commands = NULL;
+	if (config_load(configFile, &commands)) {
 		puts("Syntax OK");
 		exit_status = EXIT_SUCCESS;
 	} else {
 		exit_status = EXIT_FAILURE;
 	}
-	cmdalias_config_destroy(&config);
+	command_list_free_all(commands);
 	exit(exit_status);
 }
 
 static void cmdalias_bash_init(const char *configFile) {
 	int exit_status;
-	cmdalias_config config;
-	cmdalias_config_init(&config);
-	if (cmdalias_config_load(configFile, &config)) {
-		command_list *cmd_l = config.commands;
-		string_list *name_aliases;
-		while (cmd_l) {
+	command_list *commands = NULL;
+	string_list *name_aliases = NULL;
+
+	if (config_load(configFile, &commands)) {
+		while (commands) {
 			if (configFile) {
-				fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", cmd_l->command->name, configFile, cmd_l->command->name);
+				fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", commands->command->name, configFile, commands->command->name);
 			} else {
-				fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", cmd_l->command->name, cmd_l->command->name);
+				fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", commands->command->name, commands->command->name);
 			}
-			name_aliases = cmd_l->command->name_aliases;
+			name_aliases = commands->command->name_aliases;
 			while (name_aliases) {
 				if (configFile) {
-					fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->data, configFile, cmd_l->command->name);
+					fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->data, configFile, commands->command->name);
 				} else {
-					fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->data, cmd_l->command->name);
+					fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->data, commands->command->name);
 				}
 				name_aliases = name_aliases->next;
 			}
-			cmd_l = cmd_l->next;
+			commands = commands->next;
 		}
+
 		exit_status = EXIT_SUCCESS;
 	} else {
 		exit_status = EXIT_FAILURE;
 	}
-	cmdalias_config_destroy(&config);
+
+	command_list_free_all(commands);
 	exit(exit_status);
 }
 
 static int cmdalias(const char *configFile, int argc, char **argv) {
 	int exit_status;
-	cmdalias_config config;
-	cmdalias_config_init(&config);
-	if (cmdalias_config_load(configFile, &config)) {
+	command_list *commands = NULL;
+	if (config_load(configFile, &commands)) {
 
 		if (0 == argc) {
-			cmdalias_config_destroy(&config);
+			command_list_free_all(commands);
 			display_usage();
 		}
 
-		exit_status = argc == 1 ? execvp(argv[0], argv) : alias_execute(&config, argc, argv);
+		exit_status = argc == 1 ? execvp(argv[0], argv) : alias_execute(commands, argc, argv);
 	} else {
 		exit_status = EXIT_FAILURE;
 	}
-	cmdalias_config_destroy(&config);
+
+	command_list_free_all(commands);
 	return exit_status;
 }
 
@@ -103,7 +104,7 @@ int main(int argc, char **argv)
 	struct {
 		char *config_file; /* -c */
 		int check_config;  /* --check-config */
-		int init; /* --init */
+		int init;          /* --init */
 	} cmdalias_args;
 
 	cmdalias_args.config_file  = NULL;

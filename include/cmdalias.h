@@ -5,10 +5,6 @@
 
 typedef char cmdalias_bool;
 
-typedef struct cmdalias_config_t {
-	struct command_list_t *commands;
-} cmdalias_config;
-
 typedef struct string_list_t {
 	char *data;
 	struct string_list_t *next;
@@ -48,7 +44,7 @@ void alias_list_free_all(alias_list *);
 command_list *command_list_append(command_list *, command *);
 void command_list_free_all(command_list *);
 
-int alias_execute(cmdalias_config *, int, char **);
+int alias_execute(command_list *, int, char **);
 
 #ifdef CMDALIAS_DEBUG
 #include <stdio.h>

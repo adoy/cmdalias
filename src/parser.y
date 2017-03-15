@@ -13,7 +13,7 @@
 #include "lexer.h"
 
 #define YYERROR_VERBOSE
-#define	YYPARSE_PARAM config
+#define	YYPARSE_PARAM commands
 
 void yyerror(const char *s, ...) {
 	extern int yylineno;
@@ -23,11 +23,11 @@ void yyerror(const char *s, ...) {
 
 	fprintf(stderr, "Error: ");
 	vfprintf(stderr, s, ap);
-	fprintf(stderr, " in '%s' on line %d\n", cmdalias_config_get_current_filename(), yylineno);
+	fprintf(stderr, " in '%s' on line %d\n", config_get_current_filename(), yylineno);
 	fflush(stderr);
 }
 
-int is_dir(const char *path) {
+static int is_dir(const char *path) {
 	struct stat st;
 
 	if (lstat(path, &st) == -1) {
@@ -37,7 +37,7 @@ int is_dir(const char *path) {
 	return S_ISDIR(st.st_mode);
 }
 
-int cmdalias_config_pushdir(const char *dirname) {
+static int config_pushdir(const char *dirname) {
 	struct dirent *dent;
 	DIR *dir;
 	char fn[FILENAME_MAX];
@@ -63,11 +63,11 @@ int cmdalias_config_pushdir(const char *dirname) {
 		strncpy(fn + len, dent->d_name, FILENAME_MAX - len);
 
 		if (is_dir(fn)) {
-			cmdalias_config_pushdir(fn);
+			config_pushdir(fn);
 			continue;
 		}
 
-		cmdalias_config_pushfile(fn);
+		config_pushfile(fn);
 	}
 
 	if (dir) closedir(dir);
@@ -98,51 +98,48 @@ int cmdalias_config_pushdir(const char *dirname) {
 
 %%
 
-configs_or_empty:
-		configs
+command_list_or_empty:
+		command_list
 	|	/* empty */
 ;
 
-configs:
-		configs config
-	|	configs include
-	|	config
+command_list:
+		command_list command
+	|	command_list include
+	|	command
 	|	include
 ;
 
 include:
 		T_INCLUDE T_STR ';' {
-			if (!(is_dir($2) ? cmdalias_config_pushdir($2) : cmdalias_config_pushfile($2))) {
+			if (!(is_dir($2) ? config_pushdir($2) : config_pushfile($2))) {
 				yyerror("Unable to load %s", $2);
 			}
 			free($2);
 		}
 ;
 
-config:
+command:
 		alias_name_list '=' T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
-			cmdalias_config *cfg = (cmdalias_config *) config;
-
+			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
 			cmd->name_aliases = $1;
 			cmd->global = $5;
 			cmd->aliases = $6;
 
-			cfg->commands = command_list_append(cfg->commands, cmd);
+			*cmds = command_list_append(*cmds, cmd);
 		}
 	|	T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
-			cmdalias_config *cfg = (cmdalias_config *) config;
-
+			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $1;
 			cmd->name_aliases = NULL;
 			cmd->global = $3;
 			cmd->aliases = $4;
 
-			cfg->commands = command_list_append(cfg->commands, cmd);
+			*cmds = command_list_append(*cmds, cmd);
 		}
-
 ;
 
 global_alias_list_or_empty:
@@ -212,15 +209,7 @@ end:
 
 %%
 
-void cmdalias_config_init(cmdalias_config *config) {
-	config->commands = NULL;
-}
-
-void cmdalias_config_destroy(cmdalias_config *config) {
-	command_list_free_all(config->commands);
-}
-
-int cmdalias_config_load(const char *path, cmdalias_config *config) {
+int config_load(const char *path, command_list **commands) {
 
 	if (!path) {
 		char buffer[255];
@@ -228,14 +217,13 @@ int cmdalias_config_load(const char *path, cmdalias_config *config) {
 		path = buffer;
 	}
 
-	cmdalias_config_destroy(config);
-	cmdalias_config_init(config);
+	*commands = NULL;
 
-	if (!(is_dir(path) ? cmdalias_config_pushdir(path) : cmdalias_config_pushfile(path))) {
+	if (!(is_dir(path) ? config_pushdir(path) : config_pushfile(path))) {
 		return 0;
 	}
 
-	if (yyparse(config)) {
+	if (yyparse(commands)) {
 		return 0;
 	}
 

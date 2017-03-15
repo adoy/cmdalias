@@ -30,7 +30,7 @@ static alias *get_alias(alias_list *list, const char *name) {
 	return NULL;
 }
 
-int alias_execute(cmdalias_config *conf, int argc, char **argv) {
+int alias_execute(command_list *commands, int argc, char **argv) {
 	int args_c = 0;
 	char *args[100];
 	int i;
@@ -38,7 +38,7 @@ int alias_execute(cmdalias_config *conf, int argc, char **argv) {
 	alias_list *aliases = NULL;
 	alias_list *global  = NULL;
 
-	command *cmd = get_cmd(conf->commands, argv[0]);
+	command *cmd = get_cmd(commands, argv[0]);
 	if (cmd) {
 		aliases = cmd->aliases;
 		global  = cmd->global;

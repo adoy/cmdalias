@@ -7,18 +7,18 @@
 #include "lexer.h"
 #include "parser.h"
 
-struct cmdalias_config_bufstack_t {
-	struct cmdalias_config_bufstack_t *prev;
+struct config_bufstack_t {
+	struct config_bufstack_t *prev;
 	YY_BUFFER_STATE bs;
 	int lineno;
 	char *filename;
 	FILE *f;
 } *curbs = 0;
 
-int cmdalias_config_pushfile(const char *filename) {
+int config_pushfile(const char *filename) {
 
 	FILE *f = fopen(filename, "r");
-	struct cmdalias_config_bufstack_t *bs = (struct cmdalias_config_bufstack_t *) malloc(sizeof(struct cmdalias_config_bufstack_t));
+	struct config_bufstack_t *bs = (struct config_bufstack_t *) malloc(sizeof(struct config_bufstack_t));
 
 	if (!f || !bs) return 0;
 
@@ -36,9 +36,9 @@ int cmdalias_config_pushfile(const char *filename) {
 	return 1;
 }
 
-int cmdalias_config_popfile(void) {
-	struct cmdalias_config_bufstack_t *bs = curbs;
-	struct cmdalias_config_bufstack_t *prevbs;
+int config_popfile(void) {
+	struct config_bufstack_t *bs = curbs;
+	struct config_bufstack_t *prevbs;
 
 
 	if (!bs) return 0;
@@ -61,7 +61,7 @@ int cmdalias_config_popfile(void) {
 	return 1;
 }
 
-char *cmdalias_config_get_current_filename(void) {
+char *config_get_current_filename(void) {
 	if (curbs) {
 		return curbs->filename;
 	}
@@ -73,7 +73,7 @@ char *cmdalias_config_get_current_filename(void) {
 
 %%
 
-<<EOF>>				{ if (!cmdalias_config_popfile()) yyterminate(); }
+<<EOF>>				{ if (!config_popfile()) yyterminate(); }
 \"(\\.|[^\\"])*\"	{ yytext[yyleng-1] = 0; yylval.str = strdup(yytext+1); return T_STR; }
 INCLUDE				{ return T_INCLUDE; }
 [-_0-9A-Za-z]+		{ yylval.str = strdup(yytext); return T_NAME; }
