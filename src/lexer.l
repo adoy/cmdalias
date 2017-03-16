@@ -7,6 +7,8 @@
 #include "lexer.h"
 #include "parser.h"
 
+#define BUFFER_SIZE 1024
+
 struct config_bufstack_t {
 	struct config_bufstack_t *prev;
 	YY_BUFFER_STATE bs;
@@ -58,6 +60,7 @@ int config_popfile(void) {
 	curbs = prevbs;
 
 	yylineno = curbs->lineno;
+
 	return 1;
 }
 
@@ -71,14 +74,54 @@ char *config_get_current_filename(void) {
 
 %}
 
+%x IN_STRING
+
+NAME 		[-_0-9A-Za-z]+
+WHITESPACE 	[ \t\r\n]+
+TOKENS      [;={}!*,]
+ANYCHAR    	.
+
 %%
 
-<<EOF>>				{ if (!config_popfile()) yyterminate(); }
-\"(\\.|[^\\"])*\"	{ yytext[yyleng-1] = 0; yylval.str = strdup(yytext+1); return T_STR; }
-INCLUDE				{ return T_INCLUDE; }
-[-_0-9A-Za-z]+		{ yylval.str = strdup(yytext); return T_NAME; }
-[ \t\r\n]+			{ /* IGNORE */ }
-#.*					{ /* COMMENTS */ }
-.					{ return yytext[0]; }
+	char string_size = 0;
+	char string_buf[BUFFER_SIZE];
+	char *string_buf_ptr = string_buf;
+
+
+<INITIAL><<EOF>>		{ if (!config_popfile()) yyterminate(); }
+<INITIAL>\"             { string_buf[0] = '\0'; BEGIN(IN_STRING); }
+<INITIAL>INCLUDE		{ return T_INCLUDE; }
+<INITIAL>{NAME}			{ yylval.str = strdup(yytext); return T_NAME; }
+<INITIAL>{WHITESPACE}	{ /* IGNORE */ }
+<INITIAL>#.*			{ /* COMMENTS */ }
+<INITIAL>{TOKENS}		{ return yytext[0]; }
+<INITIAL>{ANYCHAR}		{ yyerror("Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
+
+<IN_STRING><<EOF>>  { yyerror("Unterminated string"); exit(EXIT_FAILURE); }
+<IN_STRING>[^\\"$]+	{
+	if (yyleng + string_size > BUFFER_SIZE) {
+		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		exit(EXIT_FAILURE);
+	}
+	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
+	string_size += yyleng;
+	string_buf_ptr += yyleng;
+}
+<IN_STRING>\\.     {
+	if (yyleng + 1 > BUFFER_SIZE) {
+		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		exit(EXIT_FAILURE);
+	}
+	*string_buf_ptr = yytext[1];
+	string_size++;
+	string_buf_ptr++;
+}
+<IN_STRING>\" 		{
+	BEGIN(INITIAL);
+	yylval.str = strndup(string_buf, string_size);
+	string_buf_ptr = string_buf;
+	string_size = 0;
+	return T_STR;
+}
 
 %%

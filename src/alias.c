@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include "cmdalias.h"
 
-
 static command *get_cmd(command_list *list, const char *cmd) {
 	while (list) {
 		if (0 == strcmp(cmd, list->command->name)) {
