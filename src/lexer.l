@@ -98,7 +98,7 @@ ANYCHAR    	.
 <INITIAL>{ANYCHAR}		{ yyerror("Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
 
 <IN_STRING><<EOF>>  { yyerror("Unterminated string"); exit(EXIT_FAILURE); }
-<IN_STRING>[^\\"$]+	{
+<IN_STRING>[^\\"]+	{
 	if (yyleng + string_size > BUFFER_SIZE) {
 		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
