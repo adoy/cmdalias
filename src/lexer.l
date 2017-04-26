@@ -83,7 +83,7 @@ ANYCHAR    	.
 
 %%
 
-	char string_size = 0;
+	int string_size = 0;
 	char string_buf[BUFFER_SIZE];
 	char *string_buf_ptr = string_buf;
 
