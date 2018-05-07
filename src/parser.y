@@ -140,6 +140,16 @@ command:
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
+	|	alias_name_list '=' T_NAME ';' {
+			command_list **cmds = (command_list **) commands;
+			command *cmd = (command *) malloc(sizeof(command));
+			cmd->name = $3;
+			cmd->name_aliases = $1;
+			cmd->global = NULL;
+			cmd->aliases = NULL;
+
+			*cmds = command_list_append(*cmds, cmd);
+		}
 ;
 
 global_alias_list_or_empty:
