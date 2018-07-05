@@ -73,12 +73,6 @@ static int cmdalias(const char *configFile, int argc, char **argv) {
 	int exit_status;
 	command_list *commands = NULL;
 	if (config_load(configFile, &commands)) {
-
-		if (0 == argc) {
-			command_list_free_all(commands);
-			display_usage();
-		}
-
 		exit_status = argc == 1 ? execvp(argv[0], argv) : alias_execute(commands, argc, argv);
 	} else {
 		exit_status = EXIT_FAILURE;
@@ -141,6 +135,11 @@ int main(int argc, char **argv)
 		}
 
 		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	}
+
+	if (1 == argc) {
+		display_usage();
+		exit(EXIT_SUCCESS);
 	}
 
 	if (cmdalias_args.check_config) {
