@@ -137,17 +137,17 @@ int main(int argc, char **argv)
 		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	}
 
-	if (0 == argc - optind) {
-		display_usage();
-		exit(EXIT_SUCCESS);
-	}
-
 	if (cmdalias_args.check_config) {
 		check_config(cmdalias_args.config_file);
 	}
 
 	if (cmdalias_args.init) {
 		cmdalias_bash_init(cmdalias_args.config_file);
+	}
+
+	if (0 == argc - optind) {
+		display_usage();
+		exit(EXIT_SUCCESS);
 	}
 
 	exit(cmdalias(cmdalias_args.config_file, argc - optind, argv + optind));
