@@ -137,7 +137,7 @@ int main(int argc, char **argv)
 		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	}
 
-	if (1 == argc) {
+	if (0 == argc - optind) {
 		display_usage();
 		exit(EXIT_SUCCESS);
 	}
