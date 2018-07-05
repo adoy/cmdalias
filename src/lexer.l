@@ -75,6 +75,7 @@ char *config_get_current_filename(void) {
 %}
 
 %x IN_STRING
+%x IN_SUBCMD
 
 NAME 		[-_0-9A-Za-z]+
 WHITESPACE 	[ \t\r\n]+
@@ -90,6 +91,7 @@ ANYCHAR    	.
 
 <INITIAL><<EOF>>		{ if (!config_popfile()) yyterminate(); }
 <INITIAL>\"             { string_buf[0] = '\0'; BEGIN(IN_STRING); }
+<INITIAL>`              { string_buf[0] = '\0'; BEGIN(IN_SUBCMD); }
 <INITIAL>INCLUDE		{ return T_INCLUDE; }
 <INITIAL>{NAME}			{ yylval.str = strdup(yytext); return T_NAME; }
 <INITIAL>{WHITESPACE}	{ /* IGNORE */ }
@@ -97,7 +99,7 @@ ANYCHAR    	.
 <INITIAL>{TOKENS}		{ return yytext[0]; }
 <INITIAL>{ANYCHAR}		{ yyerror("Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
 
-<IN_STRING><<EOF>>  { yyerror("Unterminated string"); exit(EXIT_FAILURE); }
+<IN_STRING,IN_SUBCMD><<EOF>>  { yyerror("Unterminated string"); exit(EXIT_FAILURE); }
 <IN_STRING>[^\\"]+	{
 	if (yyleng + string_size > BUFFER_SIZE) {
 		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
@@ -123,5 +125,29 @@ ANYCHAR    	.
 	string_size = 0;
 	return T_STR;
 }
-
+<IN_SUBCMD>[^\\`]+	{
+	if (yyleng + string_size > BUFFER_SIZE) {
+		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		exit(EXIT_FAILURE);
+	}
+	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
+	string_size += yyleng;
+	string_buf_ptr += yyleng;
+}
+<IN_SUBCMD>\\.     {
+	if (yyleng + 1 > BUFFER_SIZE) {
+		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		exit(EXIT_FAILURE);
+	}
+	*string_buf_ptr = yytext[1];
+	string_size++;
+	string_buf_ptr++;
+}
+<IN_SUBCMD>\` 		{
+	BEGIN(INITIAL);
+	yylval.str = strndup(string_buf, string_size);
+	string_buf_ptr = string_buf;
+	string_size = 0;
+	return T_CMD;
+}
 %%

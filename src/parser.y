@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <ctype.h>
 
 
 #include "cmdalias.h"
@@ -74,6 +75,18 @@ static int config_pushdir(const char *dirname) {
 
 	return 1;
 }
+
+static void rtrim(char* s) {
+	int len = strlen(s);
+	if (len > 0) {
+		char *pos = s + len - 1;
+		while(pos >= s && isspace(*pos)) {
+			*pos = '\0';
+			pos--;
+		}
+	}
+}
+
 %}
 
 %union {
@@ -88,10 +101,11 @@ static int config_pushdir(const char *dirname) {
 
 %token <str>  T_NAME "Name (T_NAME)"
 %token <str>  T_STR  "String (T_STR)"
+%token <str>  T_CMD  "Command (T_CMD)"
 %token T_INCLUDE     "Include (T_INCLUDE)"
 
-%type <str> string
-%type <str_list> string_list alias_name_list
+%type <str> string_or_subcmd
+%type <str_list> string_list_or_subcmd alias_name_list
 %type <alias> alias
 %type <alias_list> global_alias_list_or_empty alias_list_or_empty alias_list
 %type <mbool> is_cmd
@@ -168,14 +182,14 @@ alias_list:
 ;
 
 alias:
-		alias_name_list '=' is_cmd string_list ';' {
+		alias_name_list '=' is_cmd string_list_or_subcmd ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		= $1;
 			$$->is_cmd		= $3;
 			$$->substitutes = $4;
 			$$->subaliases  = NULL;
 		}
-	|	alias_name_list '=' is_cmd string_list '{' alias_list_or_empty '}' end {
+	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' alias_list_or_empty '}' end {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		= $1;
 			$$->is_cmd		= $3;
@@ -202,14 +216,32 @@ is_cmd:
 	|	/* empty */ { $$ = 0; }
 ;
 
-string_list:
-		string_list string { $$ = string_list_append($1, $2); }
-	|	string { $$ = string_list_append(NULL, $1); }
+string_list_or_subcmd:
+		string_list_or_subcmd string_or_subcmd { $$ = string_list_append($1, $2); }
+	|	string_or_subcmd { $$ = string_list_append(NULL, $1); }
 ;
 
-string:
+string_or_subcmd:
 		T_STR
 	|	T_NAME
+	|	T_CMD {
+	FILE *fp;
+	char res[1035];
+
+	fp = popen($1, "r");
+	if (fp == NULL) {
+		exit(EXIT_FAILURE);
+	}
+
+	if (fgets(res, sizeof(res)-1, fp) == NULL) {
+		yyerror("Error while fetching result\n");
+	}
+
+	pclose(fp);
+
+	rtrim(res);
+	$$ = strdup(res);
+}
 ;
 
 end:
