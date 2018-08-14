@@ -1,4 +1,4 @@
-%option never-interactive case-insensitive warn nodefault noinput nounput yylineno noyywrap
+%option never-interactive case-insensitive warn noinput nounput yylineno noyywrap
 
 %{
 #include <string.h>
