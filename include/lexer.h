@@ -8,7 +8,7 @@ extern struct config_bufstack_t *curbs;
 
 int config_pushfile(const char *);
 int yylex (void);
-void yyerror(const char *s, ...);
+void yyerror(command_list **, const char *s, ...);
 
 int config_load(const char *, command_list **);
 char *config_get_current_filename(void);

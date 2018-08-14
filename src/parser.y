@@ -1,3 +1,5 @@
+%parse-param { command_list **commands }
+
 %{
 
 #include <sys/types.h>
@@ -16,7 +18,7 @@
 #define YYERROR_VERBOSE
 #define	YYPARSE_PARAM commands
 
-void yyerror(const char *s, ...) {
+void yyerror(command_list **cmds, const char *s, ...) {
 	extern int yylineno;
 
 	va_list ap;
@@ -129,7 +131,7 @@ command_list:
 include:
 		T_INCLUDE T_STR ';' {
 			if (!(is_dir($2) ? config_pushdir($2) : config_pushfile($2))) {
-				yyerror("Unable to load %s", $2);
+				yyerror(NULL, "Unable to load %s", $2);
 			}
 			free($2);
 		}
@@ -236,7 +238,7 @@ string_or_subcmd:
 	}
 
 	if (fgets(res, sizeof(res)-1, fp) == NULL) {
-		yyerror("Error while fetching result\n");
+		yyerror(NULL, "Error while fetching result\n");
 	}
 
 	pclose(fp);

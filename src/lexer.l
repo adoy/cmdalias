@@ -97,12 +97,12 @@ ANYCHAR    	.
 <INITIAL>{WHITESPACE}	{ /* IGNORE */ }
 <INITIAL>#.*			{ /* COMMENTS */ }
 <INITIAL>{TOKENS}		{ return yytext[0]; }
-<INITIAL>{ANYCHAR}		{ yyerror("Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
+<INITIAL>{ANYCHAR}		{ yyerror(NULL, "Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
 
-<IN_STRING,IN_SUBCMD><<EOF>>  { yyerror("Unterminated string"); exit(EXIT_FAILURE); }
+<IN_STRING,IN_SUBCMD><<EOF>>  { yyerror(NULL, "Unterminated string"); exit(EXIT_FAILURE); }
 <IN_STRING>[^\\"]+	{
 	if (yyleng + string_size > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
@@ -111,7 +111,7 @@ ANYCHAR    	.
 }
 <IN_STRING>\\.     {
 	if (yyleng + 1 > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	*string_buf_ptr = yytext[1];
@@ -127,7 +127,7 @@ ANYCHAR    	.
 }
 <IN_SUBCMD>[^\\`]+	{
 	if (yyleng + string_size > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
@@ -136,7 +136,7 @@ ANYCHAR    	.
 }
 <IN_SUBCMD>\\.     {
 	if (yyleng + 1 > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	*string_buf_ptr = yytext[1];
