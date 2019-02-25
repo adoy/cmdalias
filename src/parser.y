@@ -45,7 +45,8 @@ static int config_pushdir(const char *dirname) {
 	int len = strlen(dirname);
 
 	if (len >= FILENAME_MAX - 1) {
-		/* Name too long */
+		debug_msg("Directory name to long");
+
 		return 0;
 	}
 
@@ -53,7 +54,8 @@ static int config_pushdir(const char *dirname) {
 	fn[len++] = '/';
 
 	if (!(dir = opendir(dirname))) {
-		/* Can't open directory */
+		debug_msg("Can't open directory: %s\n", dirname);
+
 		return 0;
 	}
 
