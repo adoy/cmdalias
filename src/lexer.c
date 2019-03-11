@@ -918,12 +918,12 @@ YY_RULE_SETUP
 case 8:
 YY_RULE_SETUP
 #line 100 "src/lexer.l"
-{ yyerror("Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
+{ yyerror(NULL, "Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
 	YY_BREAK
 case YY_STATE_EOF(IN_STRING):
 case YY_STATE_EOF(IN_SUBCMD):
 #line 102 "src/lexer.l"
-{ yyerror("Unterminated string"); exit(EXIT_FAILURE); }
+{ yyerror(NULL, "Unterminated string"); exit(EXIT_FAILURE); }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
@@ -931,7 +931,7 @@ YY_RULE_SETUP
 #line 103 "src/lexer.l"
 {
 	if (yyleng + string_size > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
@@ -944,7 +944,7 @@ YY_RULE_SETUP
 #line 112 "src/lexer.l"
 {
 	if (yyleng + 1 > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	*string_buf_ptr = yytext[1];
@@ -969,7 +969,7 @@ YY_RULE_SETUP
 #line 128 "src/lexer.l"
 {
 	if (yyleng + string_size > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
@@ -982,7 +982,7 @@ YY_RULE_SETUP
 #line 137 "src/lexer.l"
 {
 	if (yyleng + 1 > BUFFER_SIZE) {
-		yyerror("String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
 	}
 	*string_buf_ptr = yytext[1];

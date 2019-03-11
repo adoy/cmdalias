@@ -257,8 +257,11 @@ end:
 
 int config_load(const char *path, command_list **commands) {
 
+	char *buffer = NULL;
+	int r =  1;
+
 	if (!path) {
-		char buffer[255];
+		buffer = (char *) malloc(sizeof(char) * 255);
 		snprintf(buffer, 255, "%s/.cmdalias", getenv("HOME"));
 		path = buffer;
 	}
@@ -266,12 +269,14 @@ int config_load(const char *path, command_list **commands) {
 	*commands = NULL;
 
 	if (!(is_dir(path) ? config_pushdir(path) : config_pushfile(path))) {
-		return 0;
+		r = 0;
+	} else if (yyparse(commands)) {
+		r = 0;
 	}
 
-	if (yyparse(commands)) {
-		return 0;
+	if (buffer) {
+		free(buffer);
 	}
 
-	return 1;
+	return r;
 }
