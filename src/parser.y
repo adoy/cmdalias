@@ -204,7 +204,7 @@ alias:
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names 		= string_list_append(NULL, $1);
 			$$->is_cmd		= 0;
-			$$->substitutes = string_list_append(NULL, $1);
+			$$->substitutes = string_list_append(NULL, strdup($1));
 			$$->subaliases  = $3;
 		}
 
@@ -233,6 +233,8 @@ string_or_subcmd:
 	char res[1035];
 
 	fp = popen($1, "r");
+	free($1);
+
 	if (fp == NULL) {
 		exit(EXIT_FAILURE);
 	}
@@ -273,6 +275,8 @@ int config_load(const char *path, command_list **commands) {
 	} else if (yyparse(commands)) {
 		r = 0;
 	}
+
+	yylex_destroy();
 
 	if (buffer) {
 		free(buffer);

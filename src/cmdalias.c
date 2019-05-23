@@ -42,24 +42,24 @@ static void cmdalias_bash_init(const char *configFile) {
 	string_list *name_aliases = NULL;
 
 	if (config_load(configFile, &commands)) {
-		while (commands) {
+		command_list *current_cmd = commands;
+		while (current_cmd) {
 			if (configFile) {
-				fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", commands->command->name, configFile, commands->command->name);
+				fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", current_cmd->command->name, configFile, current_cmd->command->name);
 			} else {
-				fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", commands->command->name, commands->command->name);
+				fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", current_cmd->command->name, current_cmd->command->name);
 			}
-			name_aliases = commands->command->name_aliases;
+			name_aliases = current_cmd->command->name_aliases;
 			while (name_aliases) {
 				if (configFile) {
-					fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->data, configFile, commands->command->name);
+					fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->data, configFile, current_cmd->command->name);
 				} else {
-					fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->data, commands->command->name);
+					fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->data, current_cmd->command->name);
 				}
 				name_aliases = name_aliases->next;
 			}
-			commands = commands->next;
+			current_cmd = current_cmd->next;
 		}
-
 		exit_status = EXIT_SUCCESS;
 	} else {
 		exit_status = EXIT_FAILURE;
