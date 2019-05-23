@@ -5,9 +5,20 @@
 
 static command *get_cmd(command_list *list, const char *cmd) {
 	while (list) {
+		string_list *name_aliases = NULL;
+
 		if (0 == strcmp(cmd, list->command->name)) {
 			return list->command;
 		}
+
+		name_aliases = list->command->name_aliases;
+		while (name_aliases) {
+			if (0 == strcmp(cmd, name_aliases->data)) {
+				return list->command;
+			}
+			name_aliases = name_aliases->next;
+		}
+
 		list = list->next;
 	}
 
@@ -38,11 +49,21 @@ int alias_execute(command_list *commands, int argc, char **argv) {
 	alias_list *global  = NULL;
 
 	command *cmd = get_cmd(commands, argv[0]);
+
 	if (cmd) {
+		string_list *str_list = cmd->args;
 		aliases = cmd->aliases;
 		global  = cmd->global;
+
+		args[args_c++] = cmd->name;
+		while (str_list) {
+			args[args_c++] = str_list->data;
+			str_list = str_list->next;
+		}
+	} else {
+		args[args_c++] = argv[0];
 	}
-	args[args_c++] = argv[0];
+
 
 	for (i = 1; i < argc; i++) {
 		a = get_alias(aliases, argv[i]);

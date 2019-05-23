@@ -109,7 +109,7 @@ static void rtrim(char* s) {
 %token T_INCLUDE     "Include (T_INCLUDE)"
 
 %type <str> string_or_subcmd
-%type <str_list> string_list_or_subcmd alias_name_list
+%type <str_list> string_list_or_subcmd alias_name_list cmd_args_or_empty
 %type <alias> alias
 %type <alias_list> global_alias_list_or_empty alias_list_or_empty alias_list
 %type <mbool> is_cmd
@@ -138,30 +138,33 @@ include:
 ;
 
 command:
-		alias_name_list '=' T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+		alias_name_list '=' T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' end {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
+			cmd->args = $4;
 			cmd->name_aliases = $1;
-			cmd->global = $5;
-			cmd->aliases = $6;
+			cmd->global = $6;
+			cmd->aliases = $7;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-	|	T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+	|	T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' end {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $1;
+			cmd->args = $2;
 			cmd->name_aliases = NULL;
-			cmd->global = $3;
-			cmd->aliases = $4;
+			cmd->global = $4;
+			cmd->aliases = $5;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-	|	alias_name_list '=' T_NAME ';' {
+	|	alias_name_list '=' T_NAME cmd_args_or_empty ';' {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
+			cmd->args = $4;
 			cmd->name_aliases = $1;
 			cmd->global = NULL;
 			cmd->aliases = NULL;
@@ -218,6 +221,11 @@ alias_name_list:
 is_cmd:
 		'!' { $$ = 1; }
 	|	/* empty */ { $$ = 0; }
+;
+
+cmd_args_or_empty:
+		string_list_or_subcmd { $$ = $1; }
+	|	/* empty */ { $$ = NULL; }
 ;
 
 string_list_or_subcmd:
