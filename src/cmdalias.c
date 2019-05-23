@@ -7,7 +7,7 @@
 #include "lexer.h"
 
 static void display_usage() {
-	puts("Usage: ./cmdalias [OPTION] -- <command> [args...] ");
+	puts("Usage: cmdalias [OPTION] -- <command> [args...] ");
 	puts("  -c, --config=CONF       Configuration file or directory (default: ~/.cmdalias)");
 	puts("  -i, --init              Use this option to add in your bash profile and initialize your aliases");
 	puts("                          source<(cmdalias -i)");
