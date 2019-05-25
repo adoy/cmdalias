@@ -1,8 +1,8 @@
 #ifndef _CONFIG_LEXER_H_
 #define _CONFIG_LEXER_H_
 
-#include <stdlib.h>
 #include "cmdalias.h"
+#include <stdlib.h>
 
 extern struct config_bufstack_t *curbs;
 
