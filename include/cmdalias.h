@@ -30,7 +30,8 @@ typedef struct global_aliases_list_t {
 
 typedef struct command_t {
   char *name;
-  string_list *args;
+  string_list *before_args;
+  string_list *after_args;
   string_list *name_aliases;
   alias_list *global_alias_list;
   alias_list *alias_list;

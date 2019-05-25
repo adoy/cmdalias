@@ -11,7 +11,8 @@ static void free_alias(alias *a) {
 
 static void free_command(command *cmd) {
   free(cmd->name);
-  string_list_free_all(cmd->args);
+  string_list_free_all(cmd->before_args);
+  string_list_free_all(cmd->after_args);
   string_list_free_all(cmd->name_aliases);
   alias_list_free_all(cmd->global_alias_list);
   alias_list_free_all(cmd->alias_list);

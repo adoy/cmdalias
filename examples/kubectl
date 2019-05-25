@@ -7,10 +7,10 @@ kubectl {
 		-a = --all-namespaces;
 		-json = -o json;
 		-yaml = -o yaml;
-	}
+	};
 	ns = config set-context `kubectl config current-context` --namespace;
 	gc = config get-contexts;
 	uc = config use-context;
 	g = get;
 	d = describe;
-}
+};

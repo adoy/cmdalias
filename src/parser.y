@@ -136,22 +136,24 @@ include:
 ;
 
 command:
-		alias_name_list '=' T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+		alias_name_list '=' T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
-			cmd->args = $4;
+			cmd->before_args = $4;
+			cmd->after_args = $9;
 			cmd->name_aliases = $1;
 			cmd->global_alias_list = $6;
 			cmd->alias_list = $7;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-	|	T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+	|	T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $1;
-			cmd->args = $2;
+			cmd->before_args = $2;
+			cmd->after_args = $7;
 			cmd->name_aliases = NULL;
 			cmd->global_alias_list = $4;
 			cmd->alias_list = $5;
@@ -162,7 +164,8 @@ command:
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
-			cmd->args = $4;
+			cmd->before_args = $4;
+			cmd->after_args = NULL;
 			cmd->name_aliases = $1;
 			cmd->global_alias_list = NULL;
 			cmd->alias_list = NULL;
@@ -172,7 +175,7 @@ command:
 ;
 
 global_alias_list_or_empty:
-		'*' '{' alias_list_or_empty '}' end { $$ = $3; }
+		'*' '{' alias_list_or_empty '}' ';' { $$ = $3; }
 	|	/* empty */ { $$ = NULL; }
 ;
 
@@ -195,7 +198,7 @@ alias:
 			$$->sub_alias_list    = NULL;
 			$$->global_alias_list = NULL;
 		}
-	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		      = $1;
 			$$->is_cmd		      = $3;
@@ -203,7 +206,7 @@ alias:
 			$$->global_alias_list = $6;
 			$$->sub_alias_list    = $7;
 		}
-	|  T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
+	|  T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names 		      = string_list_append(NULL, $1);
 			$$->is_cmd		      = 0;
@@ -263,11 +266,6 @@ string_or_subcmd:
 	rtrim(res);
 	$$ = strdup(res);
 }
-;
-
-end:
-		';'
-	|	/* empty */
 ;
 
 %%

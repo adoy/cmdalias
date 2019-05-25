@@ -64,7 +64,7 @@ int alias_execute(command_list *commands, int argc, char **argv) {
   command *cmd = get_cmd(commands, argv[0]);
 
   if (cmd) {
-    string_list *str_list = cmd->args;
+    string_list *str_list = cmd->before_args;
     aliases = cmd->alias_list;
     if (cmd->global_alias_list) {
       globals = global_alias_list_append(globals, cmd->global_alias_list);
@@ -108,6 +108,14 @@ int alias_execute(command_list *commands, int argc, char **argv) {
     } else {
       args[args_c++] = argv[i];
       aliases = NULL;
+    }
+  }
+
+  if (cmd) {
+    string_list *str_list = cmd->after_args;
+    while (str_list) {
+      args[args_c++] = str_list->str;
+      str_list = str_list->next;
     }
   }
 
