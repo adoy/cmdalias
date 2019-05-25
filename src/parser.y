@@ -98,8 +98,6 @@ static void rtrim(char* s) {
 	struct string_list_t *str_list;
 	struct alias_t *alias;
 	struct alias_list_t *alias_list;
-	struct command_t *cmd;
-	struct command_list_t *cmd_list;
 	cmdalias_bool mbool;
 }
 

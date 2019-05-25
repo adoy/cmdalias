@@ -213,11 +213,9 @@ union YYSTYPE
 	struct string_list_t *str_list;
 	struct alias_t *alias;
 	struct alias_list_t *alias_list;
-	struct command_t *cmd;
-	struct command_list_t *cmd_list;
 	cmdalias_bool mbool;
 
-#line 221 "src/parser.c" /* yacc.c:355  */
+#line 219 "src/parser.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -234,7 +232,7 @@ int yyparse (command_list **commands);
 
 /* Copy the second part of user declarations.  */
 
-#line 238 "src/parser.c" /* yacc.c:358  */
+#line 236 "src/parser.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -532,10 +530,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   120,   120,   121,   125,   126,   127,   128,   132,   141,
-     152,   163,   177,   178,   182,   183,   187,   188,   192,   200,
-     208,   220,   221,   225,   226,   230,   231,   235,   236,   240,
-     241,   247,   248,   271,   272
+       0,   118,   118,   119,   123,   124,   125,   126,   130,   139,
+     150,   161,   175,   176,   180,   181,   185,   186,   190,   198,
+     206,   218,   219,   223,   224,   228,   229,   233,   234,   238,
+     239,   245,   246,   269,   270
 };
 #endif
 
@@ -1347,18 +1345,18 @@ yyreduce:
   switch (yyn)
     {
         case 8:
-#line 132 "src/parser.y" /* yacc.c:1646  */
+#line 130 "src/parser.y" /* yacc.c:1646  */
     {
 			if (!(is_dir((yyvsp[-1].str)) ? config_pushdir((yyvsp[-1].str)) : config_pushfile((yyvsp[-1].str)))) {
 				yyerror(NULL, "Unable to load %s", (yyvsp[-1].str));
 			}
 			free((yyvsp[-1].str));
 		}
-#line 1358 "src/parser.c" /* yacc.c:1646  */
+#line 1356 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 141 "src/parser.y" /* yacc.c:1646  */
+#line 139 "src/parser.y" /* yacc.c:1646  */
     {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
@@ -1370,11 +1368,11 @@ yyreduce:
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-#line 1374 "src/parser.c" /* yacc.c:1646  */
+#line 1372 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 152 "src/parser.y" /* yacc.c:1646  */
+#line 150 "src/parser.y" /* yacc.c:1646  */
     {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
@@ -1386,11 +1384,11 @@ yyreduce:
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-#line 1390 "src/parser.c" /* yacc.c:1646  */
+#line 1388 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 163 "src/parser.y" /* yacc.c:1646  */
+#line 161 "src/parser.y" /* yacc.c:1646  */
     {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
@@ -1402,47 +1400,47 @@ yyreduce:
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-#line 1406 "src/parser.c" /* yacc.c:1646  */
+#line 1404 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 177 "src/parser.y" /* yacc.c:1646  */
+#line 175 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = (yyvsp[-1].alias_list); }
-#line 1412 "src/parser.c" /* yacc.c:1646  */
+#line 1410 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 178 "src/parser.y" /* yacc.c:1646  */
+#line 176 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = NULL; }
-#line 1418 "src/parser.c" /* yacc.c:1646  */
+#line 1416 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 182 "src/parser.y" /* yacc.c:1646  */
+#line 180 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = (yyvsp[0].alias_list); }
-#line 1424 "src/parser.c" /* yacc.c:1646  */
+#line 1422 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 183 "src/parser.y" /* yacc.c:1646  */
+#line 181 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = NULL; }
-#line 1430 "src/parser.c" /* yacc.c:1646  */
+#line 1428 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 187 "src/parser.y" /* yacc.c:1646  */
+#line 185 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = alias_list_append((yyvsp[-1].alias_list), (yyvsp[0].alias)); }
-#line 1436 "src/parser.c" /* yacc.c:1646  */
+#line 1434 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 188 "src/parser.y" /* yacc.c:1646  */
+#line 186 "src/parser.y" /* yacc.c:1646  */
     { (yyval.alias_list) = alias_list_append(NULL, (yyvsp[0].alias)); }
-#line 1442 "src/parser.c" /* yacc.c:1646  */
+#line 1440 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 192 "src/parser.y" /* yacc.c:1646  */
+#line 190 "src/parser.y" /* yacc.c:1646  */
     {
 			(yyval.alias) = (alias *) malloc(sizeof(alias));
 			(yyval.alias)->names		      = (yyvsp[-4].str_list);
@@ -1451,11 +1449,11 @@ yyreduce:
 			(yyval.alias)->sub_alias_list    = NULL;
 			(yyval.alias)->global_alias_list = NULL;
 		}
-#line 1455 "src/parser.c" /* yacc.c:1646  */
+#line 1453 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 200 "src/parser.y" /* yacc.c:1646  */
+#line 198 "src/parser.y" /* yacc.c:1646  */
     {
 			(yyval.alias) = (alias *) malloc(sizeof(alias));
 			(yyval.alias)->names		      = (yyvsp[-8].str_list);
@@ -1464,11 +1462,11 @@ yyreduce:
 			(yyval.alias)->global_alias_list = (yyvsp[-3].alias_list);
 			(yyval.alias)->sub_alias_list    = (yyvsp[-2].alias_list);
 		}
-#line 1468 "src/parser.c" /* yacc.c:1646  */
+#line 1466 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 208 "src/parser.y" /* yacc.c:1646  */
+#line 206 "src/parser.y" /* yacc.c:1646  */
     {
 			(yyval.alias) = (alias *) malloc(sizeof(alias));
 			(yyval.alias)->names 		      = string_list_append(NULL, (yyvsp[-5].str));
@@ -1477,70 +1475,70 @@ yyreduce:
 			(yyval.alias)->global_alias_list = (yyvsp[-3].alias_list);
 			(yyval.alias)->sub_alias_list    = (yyvsp[-2].alias_list);
 		}
-#line 1481 "src/parser.c" /* yacc.c:1646  */
+#line 1479 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 220 "src/parser.y" /* yacc.c:1646  */
+#line 218 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = string_list_append((yyvsp[-2].str_list), (yyvsp[0].str)); }
-#line 1487 "src/parser.c" /* yacc.c:1646  */
+#line 1485 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 221 "src/parser.y" /* yacc.c:1646  */
+#line 219 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = string_list_append(NULL, (yyvsp[0].str)); }
-#line 1493 "src/parser.c" /* yacc.c:1646  */
+#line 1491 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 225 "src/parser.y" /* yacc.c:1646  */
+#line 223 "src/parser.y" /* yacc.c:1646  */
     { (yyval.mbool) = 1; }
-#line 1499 "src/parser.c" /* yacc.c:1646  */
+#line 1497 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 226 "src/parser.y" /* yacc.c:1646  */
+#line 224 "src/parser.y" /* yacc.c:1646  */
     { (yyval.mbool) = 0; }
-#line 1505 "src/parser.c" /* yacc.c:1646  */
+#line 1503 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 230 "src/parser.y" /* yacc.c:1646  */
+#line 228 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = (yyvsp[0].str_list); }
-#line 1511 "src/parser.c" /* yacc.c:1646  */
+#line 1509 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 231 "src/parser.y" /* yacc.c:1646  */
+#line 229 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = NULL; }
-#line 1517 "src/parser.c" /* yacc.c:1646  */
+#line 1515 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 235 "src/parser.y" /* yacc.c:1646  */
+#line 233 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = string_list_append((yyvsp[-1].str_list), (yyvsp[0].str)); }
-#line 1523 "src/parser.c" /* yacc.c:1646  */
+#line 1521 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 236 "src/parser.y" /* yacc.c:1646  */
+#line 234 "src/parser.y" /* yacc.c:1646  */
     { (yyval.str_list) = string_list_append(NULL, (yyvsp[0].str)); }
-#line 1529 "src/parser.c" /* yacc.c:1646  */
+#line 1527 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 241 "src/parser.y" /* yacc.c:1646  */
+#line 239 "src/parser.y" /* yacc.c:1646  */
     {
 		char *env = getenv((yyvsp[0].str));
 		free((yyvsp[0].str));
 
 		(yyval.str) = strdup(env ? env : "");
 	}
-#line 1540 "src/parser.c" /* yacc.c:1646  */
+#line 1538 "src/parser.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 248 "src/parser.y" /* yacc.c:1646  */
+#line 246 "src/parser.y" /* yacc.c:1646  */
     {
 	FILE *fp;
 	char res[1035];
@@ -1561,11 +1559,11 @@ yyreduce:
 	rtrim(res);
 	(yyval.str) = strdup(res);
 }
-#line 1565 "src/parser.c" /* yacc.c:1646  */
+#line 1563 "src/parser.c" /* yacc.c:1646  */
     break;
 
 
-#line 1569 "src/parser.c" /* yacc.c:1646  */
+#line 1567 "src/parser.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1793,7 +1791,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 275 "src/parser.y" /* yacc.c:1906  */
+#line 273 "src/parser.y" /* yacc.c:1906  */
 
 
 int config_load(const char *path, command_list **commands) {

@@ -68,11 +68,9 @@ union YYSTYPE
 	struct string_list_t *str_list;
 	struct alias_t *alias;
 	struct alias_list_t *alias_list;
-	struct command_t *cmd;
-	struct command_list_t *cmd_list;
 	cmdalias_bool mbool;
 
-#line 76 "src/parser.h" /* yacc.c:1909  */
+#line 74 "src/parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
