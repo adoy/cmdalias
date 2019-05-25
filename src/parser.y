@@ -144,8 +144,8 @@ command:
 			cmd->name = $3;
 			cmd->args = $4;
 			cmd->name_aliases = $1;
-			cmd->global = $6;
-			cmd->aliases = $7;
+			cmd->global_alias_list = $6;
+			cmd->alias_list = $7;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
@@ -155,8 +155,8 @@ command:
 			cmd->name = $1;
 			cmd->args = $2;
 			cmd->name_aliases = NULL;
-			cmd->global = $4;
-			cmd->aliases = $5;
+			cmd->global_alias_list = $4;
+			cmd->alias_list = $5;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
@@ -166,8 +166,8 @@ command:
 			cmd->name = $3;
 			cmd->args = $4;
 			cmd->name_aliases = $1;
-			cmd->global = NULL;
-			cmd->aliases = NULL;
+			cmd->global_alias_list = NULL;
+			cmd->alias_list = NULL;
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
@@ -191,24 +191,27 @@ alias_list:
 alias:
 		alias_name_list '=' is_cmd string_list_or_subcmd ';' {
 			$$ = (alias *) malloc(sizeof(alias));
-			$$->names		= $1;
-			$$->is_cmd		= $3;
-			$$->substitutes = $4;
-			$$->subaliases  = NULL;
+			$$->names		      = $1;
+			$$->is_cmd		      = $3;
+			$$->substitutes       = $4;
+			$$->sub_alias_list    = NULL;
+			$$->global_alias_list = NULL;
 		}
-	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' alias_list_or_empty '}' end {
+	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' end {
 			$$ = (alias *) malloc(sizeof(alias));
-			$$->names		= $1;
-			$$->is_cmd		= $3;
-			$$->substitutes = $4;
-			$$->subaliases  = $6;
+			$$->names		      = $1;
+			$$->is_cmd		      = $3;
+			$$->substitutes       = $4;
+			$$->global_alias_list = $6;
+			$$->sub_alias_list    = $7;
 		}
-	|  T_NAME '{' alias_list_or_empty '}' end {
+	|  T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' end {
 			$$ = (alias *) malloc(sizeof(alias));
-			$$->names 		= string_list_append(NULL, $1);
-			$$->is_cmd		= 0;
-			$$->substitutes = string_list_append(NULL, strdup($1));
-			$$->subaliases  = $3;
+			$$->names 		      = string_list_append(NULL, $1);
+			$$->is_cmd		      = 0;
+			$$->substitutes       = string_list_append(NULL, strdup($1));
+			$$->global_alias_list = $3;
+			$$->sub_alias_list    = $4;
 		}
 
 ;

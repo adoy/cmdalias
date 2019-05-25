@@ -19,7 +19,7 @@ static void display_usage() {
 }
 
 static void display_version() {
-	puts("CmdAlias " CMDALIAS_VERSION " (c)2017 Pierrick Charron - Adoy.net");
+	puts("cmdalias " CMDALIAS_VERSION " (c)2017-2019 Pierrick Charron - Adoy.net");
 	exit(EXIT_FAILURE);
 }
 
@@ -54,9 +54,9 @@ static void cmdalias_bash_init(const char *configFile) {
 			} else {
 				while (name_aliases) {
 					if (configFile) {
-						fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->data, configFile, name_aliases->data);
+						fprintf(stdout, "alias %s=\"cmdalias -c %s -- %s\";\n", name_aliases->str, configFile, name_aliases->str);
 					} else {
-						fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->data, name_aliases->data);
+						fprintf(stdout, "alias %s=\"cmdalias -- %s\";\n", name_aliases->str, name_aliases->str);
 					}
 					name_aliases = name_aliases->next;
 				}

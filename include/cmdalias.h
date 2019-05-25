@@ -6,7 +6,7 @@
 typedef char cmdalias_bool;
 
 typedef struct string_list_t {
-	char *data;
+	char *str;
 	struct string_list_t *next;
 } string_list;
 
@@ -14,7 +14,8 @@ typedef struct alias_t {
 	string_list *names;
 	cmdalias_bool is_cmd;
 	string_list *substitutes;
-	struct alias_list_t *subaliases;
+	struct alias_list_t *sub_alias_list;
+	struct alias_list_t *global_alias_list;
 } alias;
 
 typedef struct alias_list_t {
@@ -22,12 +23,17 @@ typedef struct alias_list_t {
 	struct alias_list_t *next;
 } alias_list;
 
+typedef struct global_aliases_list_t {
+	struct alias_list_t *alias_list;
+	struct global_aliases_list_t *next;
+} global_alias_list;
+
 typedef struct command_t {
 	char *name;
 	string_list *args;
 	string_list *name_aliases;
-	alias_list *global;
-	alias_list *aliases;
+	alias_list *global_alias_list;
+	alias_list *alias_list;
 } command;
 
 typedef struct command_list_t {
@@ -44,6 +50,9 @@ void alias_list_free_all(alias_list *);
 
 command_list *command_list_append(command_list *, command *);
 void command_list_free_all(command_list *);
+
+global_alias_list *global_alias_list_append(global_alias_list *, alias_list *);
+void global_alias_list_delete(global_alias_list *);
 
 int alias_execute(command_list *, int, char **);
 
