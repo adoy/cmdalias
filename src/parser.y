@@ -238,6 +238,12 @@ string_list_or_subcmd:
 
 string_or_subcmd:
 		T_STR
+	|	'$' T_NAME {
+		char *env = getenv($2);
+		free($2);
+
+		$$ = strdup(env ? env : "");
+	}
 	|	T_NAME
 	|	T_CMD {
 	FILE *fp;

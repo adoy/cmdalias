@@ -79,7 +79,7 @@ char *config_get_current_filename(void) {
 
 NAME 		[-_0-9A-Za-z]+
 WHITESPACE 	[ \t\r\n]+
-TOKENS      [;={}!*,]
+TOKENS      [;={}!$*,]
 ANYCHAR    	.
 
 %%
