@@ -79,6 +79,7 @@ int alias_execute(command_list *commands, int argc, char **argv) {
 	for (i=0; args[i] != NULL; i++) {
 		debug_msg("\t[%d] %s\n", i, args[i]);
 	}
+	return 1;
 #endif
 
 	return execvp(args[0], args);
