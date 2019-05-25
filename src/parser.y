@@ -172,7 +172,7 @@ command:
 ;
 
 global_alias_list_or_empty:
-		'*' '{' alias_list_or_empty '}' { $$ = $3; }
+		'*' '{' alias_list_or_empty '}' end { $$ = $3; }
 	|	/* empty */ { $$ = NULL; }
 ;
 
