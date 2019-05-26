@@ -1,9 +1,7 @@
 #include "cmdalias.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
 
 static command *get_cmd(command_list *list, const char *cmd) {
   while (list) {
@@ -55,11 +53,6 @@ static alias *get_global_alias(global_alias_list *globals, const char *name) {
   return NULL;
 }
 
-struct result_t {
-  int argc;
-  char *argv[100];
-};
-
 #define reset_result(r)                                                        \
   do {                                                                         \
     r->argc = 0;                                                               \
@@ -67,21 +60,21 @@ struct result_t {
 
 #define add_str_to_result(r, s)                                                \
   do {                                                                         \
-    (r)->argv[(r)->argc++] = s;                                                \
+    r->argv[r->argc++] = s;                                                    \
   } while (0)
 
 #define add_str_list_to_result(r, l)                                           \
   do {                                                                         \
     string_list *str_list = l;                                                 \
     while (str_list) {                                                         \
-      (r)->argv[(r)->argc++] = str_list->str;                                  \
+      r->argv[r->argc++] = str_list->str;                                      \
       str_list = str_list->next;                                               \
     }                                                                          \
   } while (0)
 
 int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
                             global_alias_list *globals,
-                            struct result_t *result) {
+                            alias_execute_result *result) {
   int r = 1, is_cmd = 0;
   if (argc) {
     alias *a = get_alias(aliases, argv[0]);
@@ -113,9 +106,12 @@ int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
   return r && !is_cmd;
 }
 
-int alias_execute(command_list *commands, int argc, char **argv) {
+alias_execute_result *alias_execute(command_list *commands, int argc,
+                                    char **argv) {
 
-  struct result_t result = {0};
+  alias_execute_result *result =
+      (alias_execute_result *)malloc(sizeof(alias_execute_result));
+  result->argc = 0;
 
   alias_list *aliases = NULL;
   global_alias_list *globals = NULL;
@@ -128,31 +124,33 @@ int alias_execute(command_list *commands, int argc, char **argv) {
       globals = global_alias_list_prepend(globals, cmd->global_alias_list);
     }
 
-    add_str_to_result(&result, cmd->name);
+    add_str_to_result(result, cmd->name);
 
-    add_str_list_to_result(&result, cmd->before_args);
-    if (alias_execute_recursive(argc - 1, argv + 1, aliases, globals,
-                                &result)) {
-      add_str_list_to_result(&result, cmd->after_args);
+    add_str_list_to_result(result, cmd->before_args);
+    if (alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result)) {
+      add_str_list_to_result(result, cmd->after_args);
     }
   } else {
-    add_str_to_result(&result, argv[0]);
+    add_str_to_result(result, argv[0]);
   }
 
-  add_str_to_result(&result, NULL);
+  add_str_to_result(result, NULL);
   global_alias_list_delete(globals);
 
-#if CMDALIAS_DEBUG
-  debug_msg("Executing:\n");
-  for (int i = 0; result.argv[i] != NULL; i++) {
-    debug_msg("\t[%d] %s\n", i, result.argv[i]);
-  }
-  return 1;
-#endif
+  return result;
+  /*
+  #if CMDALIAS_DEBUG
+    debug_msg("Executing:\n");
+    for (int i = 0; result->argv[i] != NULL; i++) {
+      debug_msg("\t[%d] %s\n", i, result->argv[i]);
+    }
+    return 1;
+  #endif
 
-  execvp(result.argv[0], result.argv);
+    execvp(result->argv[0], result->argv);
 
-  fprintf(stderr, "cmdalias: %s: %s\n", result.argv[0], strerror(errno));
+    fprintf(stderr, "cmdalias: %s: %s\n", result->argv[0], strerror(errno));
 
-  return -1;
+    return -1;
+  */
 }

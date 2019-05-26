@@ -5,6 +5,11 @@
 
 typedef char cmdalias_bool;
 
+typedef struct alias_execute_result_t {
+  int argc;
+  char *argv[100];
+} alias_execute_result;
+
 typedef struct string_list_t {
   char *str;
   struct string_list_t *next;
@@ -55,7 +60,7 @@ void command_list_free_all(command_list *);
 global_alias_list *global_alias_list_prepend(global_alias_list *, alias_list *);
 void global_alias_list_delete(global_alias_list *);
 
-int alias_execute(command_list *, int, char **);
+alias_execute_result *alias_execute(command_list *, int, char **);
 
 #ifdef CMDALIAS_DEBUG
 #include <stdio.h>

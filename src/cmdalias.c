@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +15,7 @@ static void display_usage() {
        "and initialize your aliases");
   puts("                          source<(cmdalias -i)");
   puts("  -h, --help              Display this help");
+  puts("  -d, --debug             Debug mode");
   puts("  -V, --version           Display version");
   puts("      --check-config      Check the configuration file");
   puts("");
@@ -80,11 +82,24 @@ static void cmdalias_bash_init(const char *configFile) {
   exit(exit_status);
 }
 
-static int cmdalias(const char *configFile, int argc, char **argv) {
+static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
   int exit_status;
   command_list *commands = NULL;
   if (config_load(configFile, &commands)) {
-    exit_status = alias_execute(commands, argc, argv);
+    alias_execute_result *result = alias_execute(commands, argc, argv);
+
+    if (debug) {
+      fprintf(stdout, "Executing:\n");
+      for (int i = 0; result->argv[i] != NULL; i++) {
+        fprintf(stdout, "\t[%d] %s\n", i, result->argv[i]);
+      }
+      exit_status = EXIT_SUCCESS;
+    } else {
+      execvp(result->argv[0], result->argv);
+      fprintf(stderr, "cmdalias: %s: %s\n", result->argv[0], strerror(errno));
+      exit_status = EXIT_FAILURE;
+    }
+    free(result);
   } else {
     exit_status = EXIT_FAILURE;
   }
@@ -95,11 +110,12 @@ static int cmdalias(const char *configFile, int argc, char **argv) {
 
 int main(int argc, char **argv) {
   int longIndex, opt;
-  static const char *optString = "c:h?Vi";
+  static const char *optString = "c:h?Vid";
   static const struct option longOpts[] = {
       {"help", no_argument, NULL, 'h'},
       {"version", no_argument, NULL, 'V'},
       {"config", required_argument, NULL, 'c'},
+      {"debug", no_argument, NULL, 'd'},
       {"check-config", no_argument, NULL, 0},
       {"init", no_argument, NULL, 0},
       {NULL, no_argument, NULL, 0}};
@@ -108,11 +124,13 @@ int main(int argc, char **argv) {
     char *config_file; /* -c */
     int check_config;  /* --check-config */
     int init;          /* --init */
+    int debug;         /* --debug */
   } cmdalias_args;
 
   cmdalias_args.config_file = NULL;
   cmdalias_args.check_config = 0;
   cmdalias_args.init = 0;
+  cmdalias_args.debug = 0;
 
   opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 
@@ -120,6 +138,9 @@ int main(int argc, char **argv) {
     switch (opt) {
     case 'c':
       cmdalias_args.config_file = optarg;
+      break;
+    case 'd':
+      cmdalias_args.debug = 1;
       break;
     case 'h': /* fall-through is intentional */
     case '?':
@@ -136,6 +157,8 @@ int main(int argc, char **argv) {
         cmdalias_args.check_config = 1;
       } else if (strcmp("init", longOpts[longIndex].name) == 0) {
         cmdalias_args.init = 1;
+      } else if (strcmp("debug", longOpts[longIndex].name) == 0) {
+        cmdalias_args.debug = 1;
       }
       break;
     default:
@@ -159,5 +182,6 @@ int main(int argc, char **argv) {
     exit(EXIT_SUCCESS);
   }
 
-  exit(cmdalias(cmdalias_args.config_file, argc - optind, argv + optind));
+  exit(cmdalias(cmdalias_args.config_file, argc - optind, argv + optind,
+                cmdalias_args.debug));
 }
