@@ -52,7 +52,7 @@ void alias_list_free_all(alias_list *);
 command_list *command_list_append(command_list *, command *);
 void command_list_free_all(command_list *);
 
-global_alias_list *global_alias_list_append(global_alias_list *, alias_list *);
+global_alias_list *global_alias_list_prepend(global_alias_list *, alias_list *);
 void global_alias_list_delete(global_alias_list *);
 
 int alias_execute(command_list *, int, char **);

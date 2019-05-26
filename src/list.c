@@ -82,8 +82,8 @@ void alias_list_free_all(alias_list *list) {
   } while (next);
 }
 
-global_alias_list *global_alias_list_append(global_alias_list *globals,
-                                            alias_list *aliases) {
+global_alias_list *global_alias_list_prepend(global_alias_list *globals,
+                                             alias_list *aliases) {
   global_alias_list *new_item =
       (global_alias_list *)malloc(sizeof(global_alias_list));
 

@@ -58,49 +58,51 @@ struct result_t {
   char *argv[100];
 };
 
+#define reset_result(r)                                                        \
+  do {                                                                         \
+    r->argc = 0;                                                               \
+  } while (0)
+
+#define add_str_to_result(r, s)                                                \
+  do {                                                                         \
+    (r)->argv[(r)->argc++] = s;                                                \
+  } while (0)
+
+#define add_str_list_to_result(r, l)                                           \
+  do {                                                                         \
+    string_list *str_list = l;                                                 \
+    while (str_list) {                                                         \
+      (r)->argv[(r)->argc++] = str_list->str;                                  \
+      str_list = str_list->next;                                               \
+    }                                                                          \
+  } while (0)
+
 void alias_execute_recursive(int argc, char **argv, alias_list *aliases,
                              global_alias_list *globals,
                              struct result_t *result) {
   if (argc) {
-    string_list *str_list;
     alias *a = get_alias(aliases, argv[0]);
     if (a) {
-      str_list = a->substitutes;
-
       if (a->global_alias_list) {
-        globals = global_alias_list_append(globals, a->global_alias_list);
+        globals = global_alias_list_prepend(globals, a->global_alias_list);
       }
-
       if (a->is_cmd) {
-        result->argc = 0;
+        reset_result(result);
       }
-
-      while (str_list) {
-        result->argv[result->argc++] = str_list->str;
-        str_list = str_list->next;
-      }
-
+      add_str_list_to_result(result, a->substitutes);
       aliases = a->sub_alias_list;
     } else if ((a = get_global_alias(globals, argv[0]))) {
-      str_list = a->substitutes;
-      while (str_list) {
-        result->argv[result->argc++] = str_list->str;
-        str_list = str_list->next;
-      }
+      add_str_list_to_result(result, a->substitutes);
       aliases = NULL;
     } else {
-      result->argv[result->argc++] = argv[0];
+      add_str_to_result(result, argv[0]);
       aliases = NULL;
     }
 
     alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result);
 
     if (a) {
-      str_list = a->substitutes_after;
-      while (str_list) {
-        result->argv[result->argc++] = str_list->str;
-        str_list = str_list->next;
-      }
+      add_str_list_to_result(result, a->substitutes_after);
     }
   }
 }
@@ -111,36 +113,25 @@ int alias_execute(command_list *commands, int argc, char **argv) {
 
   alias_list *aliases = NULL;
   global_alias_list *globals = NULL;
-
   command *cmd = get_cmd(commands, argv[0]);
 
   if (cmd) {
-    string_list *str_list = cmd->before_args;
+
     aliases = cmd->alias_list;
     if (cmd->global_alias_list) {
-      globals = global_alias_list_append(globals, cmd->global_alias_list);
+      globals = global_alias_list_prepend(globals, cmd->global_alias_list);
     }
 
-    result.argv[result.argc++] = cmd->name;
-    while (str_list) {
-      result.argv[result.argc++] = str_list->str;
-      str_list = str_list->next;
-    }
+    add_str_to_result(&result, cmd->name);
+
+    add_str_list_to_result(&result, cmd->before_args);
+    alias_execute_recursive(argc - 1, argv + 1, aliases, globals, &result);
+    add_str_list_to_result(&result, cmd->after_args);
   } else {
-    result.argv[result.argc++] = argv[0];
+    add_str_to_result(&result, argv[0]);
   }
 
-  alias_execute_recursive(argc - 1, argv + 1, aliases, globals, &result);
-
-  if (cmd) {
-    string_list *str_list = cmd->after_args;
-    while (str_list) {
-      result.argv[result.argc++] = str_list->str;
-      str_list = str_list->next;
-    }
-  }
-
-  result.argv[result.argc++] = NULL;
+  add_str_to_result(&result, NULL);
   global_alias_list_delete(globals);
 
 #if CMDALIAS_DEBUG

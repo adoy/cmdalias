@@ -31,10 +31,10 @@
    version 2.2 of Bison.  */
 
 #ifndef YY_YY_SRC_PARSER_H_INCLUDED
-# define YY_YY_SRC_PARSER_H_INCLUDED
+#define YY_YY_SRC_PARSER_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+#define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -42,14 +42,8 @@ extern int yydebug;
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    T_NAME = 258,
-    T_STR = 259,
-    T_CMD = 260,
-    T_INCLUDE = 261
-  };
+#define YYTOKENTYPE
+enum yytokentype { T_NAME = 258, T_STR = 259, T_CMD = 260, T_INCLUDE = 261 };
 #endif
 /* Tokens.  */
 #define T_NAME 258
@@ -58,29 +52,27 @@ extern int yydebug;
 #define T_INCLUDE 261
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 
-union YYSTYPE
-{
+union YYSTYPE {
 #line 96 "src/parser.y" /* yacc.c:1909  */
 
-	char *str;
-	struct string_list_t *str_list;
-	struct alias_t *alias;
-	struct alias_list_t *alias_list;
-	cmdalias_bool mbool;
+  char *str;
+  struct string_list_t *str_list;
+  struct alias_t *alias;
+  struct alias_list_t *alias_list;
+  cmdalias_bool mbool;
 
 #line 74 "src/parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 1
+#define YYSTYPE_IS_DECLARED 1
 #endif
-
 
 extern YYSTYPE yylval;
 
-int yyparse (command_list **commands);
+int yyparse(command_list **commands);
 
 #endif /* !YY_YY_SRC_PARSER_H_INCLUDED  */
