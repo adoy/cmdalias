@@ -36,9 +36,11 @@ AC_CHECK_FUNCS([memset strdup])
 AC_ARG_ENABLE([debug], AS_HELP_STRING([--enable-debug], [Enable the debug mode]))
 AC_MSG_CHECKING([if the debug mode is enabled])
 AS_IF([test "x$enable_debug" = "xyes"], [
+	CFLAGS="-g -O2"
 	AC_MSG_RESULT([yes])
 	AC_DEFINE(CMDALIAS_DEBUG,1,[Define to 1 if you want to enable the debug support])
 ],[
+    CFLAGS="-O3"
 	AC_MSG_RESULT([no])
 ])
 
