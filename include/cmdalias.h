@@ -5,10 +5,10 @@
 
 typedef char cmdalias_bool;
 
-typedef struct alias_execute_result_t {
+typedef struct alias_substitution_result_t {
   int argc;
   char *argv[100];
-} alias_execute_result;
+} alias_substitution_result;
 
 typedef struct string_list_t {
   char *str;
@@ -60,7 +60,7 @@ void command_list_free_all(command_list *);
 global_alias_list *global_alias_list_prepend(global_alias_list *, alias_list *);
 void global_alias_list_delete(global_alias_list *);
 
-alias_execute_result *alias_execute(command_list *, int, char **);
+alias_substitution_result *alias_substitution(command_list *, int, char **);
 
 #ifdef CMDALIAS_DEBUG
 #include <stdio.h>

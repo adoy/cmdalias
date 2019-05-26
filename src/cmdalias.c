@@ -86,7 +86,8 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
   int exit_status;
   command_list *commands = NULL;
   if (config_load(configFile, &commands)) {
-    alias_execute_result *result = alias_execute(commands, argc, argv);
+    alias_substitution_result *result =
+        alias_substitution(commands, argc, argv);
 
     if (debug) {
       fprintf(stdout, "Executing:\n");

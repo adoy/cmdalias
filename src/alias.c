@@ -72,9 +72,9 @@ static alias *get_global_alias(global_alias_list *globals, const char *name) {
     }                                                                          \
   } while (0)
 
-int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
-                            global_alias_list *globals,
-                            alias_execute_result *result) {
+int alias_substitution_recursive(int argc, char **argv, alias_list *aliases,
+                                 global_alias_list *globals,
+                                 alias_substitution_result *result) {
   int r = 1, is_cmd = 0;
   if (argc) {
     alias *a = get_alias(aliases, argv[0]);
@@ -96,7 +96,8 @@ int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
       aliases = NULL;
     }
 
-    r &= alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result);
+    r &= alias_substitution_recursive(argc - 1, argv + 1, aliases, globals,
+                                      result);
 
     if (a && r) {
       add_str_list_to_result(result, a->substitutes_after);
@@ -106,11 +107,11 @@ int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
   return r && !is_cmd;
 }
 
-alias_execute_result *alias_execute(command_list *commands, int argc,
-                                    char **argv) {
+alias_substitution_result *alias_substitution(command_list *commands, int argc,
+                                              char **argv) {
 
-  alias_execute_result *result =
-      (alias_execute_result *)malloc(sizeof(alias_execute_result));
+  alias_substitution_result *result =
+      (alias_substitution_result *)malloc(sizeof(alias_substitution_result));
   result->argc = 0;
 
   alias_list *aliases = NULL;
@@ -127,7 +128,8 @@ alias_execute_result *alias_execute(command_list *commands, int argc,
     add_str_to_result(result, cmd->name);
 
     add_str_list_to_result(result, cmd->before_args);
-    if (alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result)) {
+    if (alias_substitution_recursive(argc - 1, argv + 1, aliases, globals,
+                                     result)) {
       add_str_list_to_result(result, cmd->after_args);
     }
   } else {
@@ -138,19 +140,4 @@ alias_execute_result *alias_execute(command_list *commands, int argc,
   global_alias_list_delete(globals);
 
   return result;
-  /*
-  #if CMDALIAS_DEBUG
-    debug_msg("Executing:\n");
-    for (int i = 0; result->argv[i] != NULL; i++) {
-      debug_msg("\t[%d] %s\n", i, result->argv[i]);
-    }
-    return 1;
-  #endif
-
-    execvp(result->argv[0], result->argv);
-
-    fprintf(stderr, "cmdalias: %s: %s\n", result->argv[0], strerror(errno));
-
-    return -1;
-  */
 }
