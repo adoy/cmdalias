@@ -1,7 +1,9 @@
 #include "cmdalias.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 static command *get_cmd(command_list *list, const char *cmd) {
   while (list) {
@@ -148,5 +150,9 @@ int alias_execute(command_list *commands, int argc, char **argv) {
   return 1;
 #endif
 
-  return execvp(result.argv[0], result.argv);
+  execvp(result.argv[0], result.argv);
+
+  fprintf(stderr, "cmdalias: %s: %s\n", result.argv[0], strerror(errno));
+
+  return -1;
 }
