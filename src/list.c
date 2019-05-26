@@ -4,6 +4,7 @@
 static void free_alias(alias *a) {
   string_list_free_all(a->names);
   string_list_free_all(a->substitutes);
+  string_list_free_all(a->substitutes_after);
   alias_list_free_all(a->sub_alias_list);
   alias_list_free_all(a->global_alias_list);
   free(a);

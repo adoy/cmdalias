@@ -195,22 +195,25 @@ alias:
 			$$->names		      = $1;
 			$$->is_cmd		      = $3;
 			$$->substitutes       = $4;
+			$$->substitutes_after = NULL;
 			$$->sub_alias_list    = NULL;
 			$$->global_alias_list = NULL;
 		}
-	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' ';' {
+	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		      = $1;
 			$$->is_cmd		      = $3;
 			$$->substitutes       = $4;
+			$$->substitutes_after = $9;
 			$$->global_alias_list = $6;
 			$$->sub_alias_list    = $7;
 		}
-	|  T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' ';' {
+	|  T_NAME '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names 		      = string_list_append(NULL, $1);
 			$$->is_cmd		      = 0;
 			$$->substitutes       = string_list_append(NULL, strdup($1));
+			$$->substitutes_after = $6;
 			$$->global_alias_list = $3;
 			$$->sub_alias_list    = $4;
 		}

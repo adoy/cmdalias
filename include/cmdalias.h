@@ -14,6 +14,7 @@ typedef struct alias_t {
   string_list *names;
   cmdalias_bool is_cmd;
   string_list *substitutes;
+  string_list *substitutes_after;
   struct alias_list_t *sub_alias_list;
   struct alias_list_t *global_alias_list;
 } alias;
