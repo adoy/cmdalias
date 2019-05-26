@@ -77,9 +77,10 @@ struct result_t {
     }                                                                          \
   } while (0)
 
-void alias_execute_recursive(int argc, char **argv, alias_list *aliases,
-                             global_alias_list *globals,
-                             struct result_t *result) {
+int alias_execute_recursive(int argc, char **argv, alias_list *aliases,
+                            global_alias_list *globals,
+                            struct result_t *result) {
+  int r = 1, is_cmd = 0;
   if (argc) {
     alias *a = get_alias(aliases, argv[0]);
     if (a) {
@@ -88,6 +89,7 @@ void alias_execute_recursive(int argc, char **argv, alias_list *aliases,
       }
       if (a->is_cmd) {
         reset_result(result);
+        is_cmd = 1;
       }
       add_str_list_to_result(result, a->substitutes);
       aliases = a->sub_alias_list;
@@ -99,12 +101,14 @@ void alias_execute_recursive(int argc, char **argv, alias_list *aliases,
       aliases = NULL;
     }
 
-    alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result);
+    r &= alias_execute_recursive(argc - 1, argv + 1, aliases, globals, result);
 
-    if (a) {
+    if (a && r) {
       add_str_list_to_result(result, a->substitutes_after);
     }
   }
+
+  return r && !is_cmd;
 }
 
 int alias_execute(command_list *commands, int argc, char **argv) {
@@ -125,8 +129,10 @@ int alias_execute(command_list *commands, int argc, char **argv) {
     add_str_to_result(&result, cmd->name);
 
     add_str_list_to_result(&result, cmd->before_args);
-    alias_execute_recursive(argc - 1, argv + 1, aliases, globals, &result);
-    add_str_list_to_result(&result, cmd->after_args);
+    if (alias_execute_recursive(argc - 1, argv + 1, aliases, globals,
+                                &result)) {
+      add_str_list_to_result(&result, cmd->after_args);
+    }
   } else {
     add_str_to_result(&result, argv[0]);
   }
