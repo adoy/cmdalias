@@ -112,11 +112,11 @@ alias_substitution_result *alias_substitution(command_list *commands, int argc,
 
   alias_substitution_result *result =
       (alias_substitution_result *)malloc(sizeof(alias_substitution_result));
-  result->argc = 0;
-
   alias_list *aliases = NULL;
   global_alias_list *globals = NULL;
   command *cmd = get_cmd(commands, argv[0]);
+
+  result->argc = 0;
 
   if (cmd) {
 
