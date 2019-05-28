@@ -44,18 +44,12 @@ string_list *string_list_append(string_list *list, char *str) {
 }
 
 void string_list_free_all(string_list *list) {
-  string_list *next, *item;
-
-  if (!list)
-    return;
-
-  item = list;
-  do {
-    next = item->next;
+  string_list *item;
+  while ((item = list)) {
+    list = item->next;
     free(item->str);
     free(item);
-    item = next;
-  } while (next);
+  }
 }
 
 alias_list *alias_list_append(alias_list *list, alias *a) {
@@ -68,18 +62,13 @@ alias_list *alias_list_append(alias_list *list, alias *a) {
 }
 
 void alias_list_free_all(alias_list *list) {
-  alias_list *next, *item;
+  alias_list *item;
 
-  if (!list)
-    return;
-
-  item = list;
-  do {
-    next = item->next;
+  while ((item = list)) {
+    list = item->next;
     free_alias(item->alias);
     free(item);
-    item = next;
-  } while (next);
+  }
 }
 
 global_alias_list *global_alias_list_prepend(global_alias_list *globals,
@@ -93,11 +82,10 @@ global_alias_list *global_alias_list_prepend(global_alias_list *globals,
 }
 
 void global_alias_list_delete(global_alias_list *globals) {
-  global_alias_list *next;
-  while (globals) {
-    next = globals->next;
-    free(globals);
-    globals = next;
+  global_alias_list *item;
+  while ((item = globals)) {
+    globals = item->next;
+    free(item);
   }
 }
 
@@ -110,12 +98,11 @@ command_list *command_list_append(command_list *list, command *cmd) {
 }
 
 void command_list_free_all(command_list *list) {
-  command_list *next;
+  command_list *item;
 
-  while (list) {
-    next = list->next;
-    free_command(list->command);
-    free(list);
-    list = next;
-  };
+  while ((item = list)) {
+    list = item->next;
+    free_command(item->command);
+    free(item);
+  }
 }
