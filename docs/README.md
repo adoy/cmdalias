@@ -1,37 +1,90 @@
-## Welcome to GitHub Pages
+# What is cmdalias
 
-You can use the [editor on GitHub](https://github.com/adoy/cmdalias/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+`cmdalias` is a tool that I created for myself because I was tired of using too many keystrokes for commands that i'm using everyday in my shell. For example I often want to list images from my docker.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Usually to do that I would have to type the following command
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```
+$ docker images
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+Using a simple bash alias `alias d=docker` I will have to type this command
 
-### Jekyll Themes
+```
+$ d images
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/adoy/cmdalias/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+But using cmdalias I can have commands like 
 
-### Support or Contact
+```
+$ d i
+```
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+## Installation
+
+Compile the binary and put it in your `$PATH`
+
+```
+./configure
+make
+make install
+```
+
+By default make install copy the binary to `/usr/local/bin`.
+
+Add the following line to your `~/.bashrc` or equivalent file.
+
+```
+source <(cmdalias -i)
+```
+
+## Configure your commands
+
+Create a file located in your `$HOME` directory named `.cmdalias`
+
+```
+d = docker {
+  i = image;
+};
+```
+
+To reload the configuration just reload your `~/.bashrc` file your current shell.
+
+## More complexe configuration example
+
+```
+k = kubectl {
+    * {
+        p          = pod;
+        i          = ingress;
+        d          = deploy;
+        s          = svc;
+        pp         = podpreset;
+        -a         = --all-namespaces;
+        -json      = -o json;
+        -yaml,-yml = -o yaml;
+    };
+    ns = config set-context `kubectl config current-context` --namespace;
+    gc = config get-contexts;
+    uc = config use-context;
+    cc = config current-context;
+    g  = get;
+    d, desc  = describe;
+    a, apply = apply {
+        -f = -R -f;
+    };
+    e = edit;
+    tail = !kail;
+};
+```
+
+With this `kubectl` alias I can use commands like
+
+| Real command | Short command using cmdalias |
+| --- | --- |
+| `kubectl config get-contexts` | `k gc` |
+| `kubectl config use-context production` | `k uc production` |
+| `kubectl get pod --all-namespaces` | `k g p -a` |
+| `kubectl apply -R -f somefolder` | `k a -f somefolder` |
+
+
