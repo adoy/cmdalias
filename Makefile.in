@@ -10,11 +10,10 @@ CC=@CC@
 YACC=@YACC@
 LEX=@LEX@
 
-.PHONY: install uninstall
-
 ${NAME}: ${OBJ}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${OBJ} -o ${NAME} ${LDFLAGS}
 
+.PHONY: build
 build: ${NAME}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${NAME} -c ${OBJ} ${LDFLAGS}
 
@@ -24,17 +23,21 @@ src/parser.c: src/parser.y
 src/lexer.c: src/lexer.l
 	$(LEX) $(LFLAGS) -o$@ $^
 
+.PHONY: clean
 clean:
 	rm -f ${OBJ} *~ src/parser.c src/parser.h src/lexer.c
 	rm -f ${NAME}
 
+.PHONY: distclean
 distclean: clean
 	find . -name '*.in' | sed 's#\.in##g' | xargs rm -f
 	rm -f ${NAME} config.log config.status
 
-install: cmdalias
+.PHONY: install
+install: ${NAME}
 	cp cmdalias ${prefix}/bin
 	chmod a+x ${prefix}/bin/cmdalias
 
+.PHONY: uninstall
 uninstall:
 	rm -f ${prefix}/bin/cmdalias
