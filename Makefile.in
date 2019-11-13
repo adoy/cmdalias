@@ -17,6 +17,11 @@ ${NAME}: ${OBJ}
 build: ${NAME}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${NAME} -c ${OBJ} ${LDFLAGS}
 
+src/bash_autocomplete.c: autocomplete.bash
+	xxd -i $^ $@
+
+src/cmdalias.c: src/bash_autocomplete.c
+
 src/parser.c: src/parser.y
 	$(YACC) -d $^ -o$@
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "bash_autocomplete.c"
 #include "cmdalias.h"
 #include "lexer.h"
 
@@ -16,8 +17,12 @@ static void display_usage() {
   puts("                          source<(cmdalias -i)");
   puts("  -h, --help              Display this help");
   puts("  -d, --debug             Debug mode");
+  puts("  -e, --expend            Expend command");
   puts("  -V, --version           Display version");
   puts("      --check-config      Check the configuration file");
+  puts("      --complete[=SHELL]  Use this option to add in your bash profile "
+       "and initialize autocomplete (default: bash)");
+  puts("                          source<(cmdalias --complete=bash)");
   puts("");
   exit(EXIT_FAILURE);
 }
@@ -82,6 +87,40 @@ static void cmdalias_bash_init(const char *configFile) {
   exit(exit_status);
 }
 
+static void cmdalias_complete_bash(const char *configFile) {
+  int exit_status;
+  command_list *commands = NULL;
+  string_list *name_aliases = NULL;
+
+  if (config_load(configFile, &commands)) {
+
+    fprintf(stdout, "%.*s\n", autocomplete_bash_len, autocomplete_bash);
+
+    command_list *current_cmd = commands;
+    while (current_cmd) {
+      name_aliases = current_cmd->command->name_aliases;
+      if (!name_aliases) {
+        fprintf(stdout, "complete -o default-F _cmdalias %s;\n",
+                current_cmd->command->name);
+
+      } else {
+        while (name_aliases) {
+          fprintf(stdout, "complete -o default -F _cmdalias %s;\n",
+                  name_aliases->str);
+          name_aliases = name_aliases->next;
+        }
+      }
+      current_cmd = current_cmd->next;
+    }
+    exit_status = EXIT_SUCCESS;
+  } else {
+    exit_status = EXIT_FAILURE;
+  }
+
+  command_list_free_all(commands);
+  exit(exit_status);
+}
+
 static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
   int exit_status;
   command_list *commands = NULL;
@@ -89,9 +128,18 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
     alias_substitution_result *result =
         alias_substitution(commands, argc, argv);
 
-    if (debug) {
+    if (1 == debug) {
+      for (int i = 0; i < result->argc - 1; i++) {
+        fprintf(stdout, result->argv[i]);
+        if (i < result->argc - 2) {
+          fprintf(stdout, " ");
+        }
+      }
+      fprintf(stdout, "\n");
+      exit_status = EXIT_SUCCESS;
+    } else if (2 == debug) {
       fprintf(stdout, "Executing:\n");
-      for (int i = 0; result->argv[i] != NULL; i++) {
+      for (int i = 0; i < result->argc - 1; i++) {
         fprintf(stdout, "\t[%d] %s\n", i, result->argv[i]);
       }
       exit_status = EXIT_SUCCESS;
@@ -111,13 +159,15 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
 
 int main(int argc, char **argv) {
   int longIndex, opt;
-  static const char *optString = "c:h?Vid";
+  static const char *optString = "c:h?Vide";
   static const struct option longOpts[] = {
       {"help", no_argument, NULL, 'h'},
       {"version", no_argument, NULL, 'V'},
       {"config", required_argument, NULL, 'c'},
       {"debug", no_argument, NULL, 'd'},
+      {"expend", no_argument, NULL, 'e'},
       {"check-config", no_argument, NULL, 0},
+      {"complete", optional_argument, NULL, 0},
       {"init", no_argument, NULL, 0},
       {NULL, no_argument, NULL, 0}};
 
@@ -125,13 +175,15 @@ int main(int argc, char **argv) {
     char *config_file; /* -c */
     int check_config;  /* --check-config */
     int init;          /* --init */
-    int debug;         /* --debug */
+    int expend;        /* --expend */
+    char *complete;    /* --complete */
   } cmdalias_args;
 
   cmdalias_args.config_file = NULL;
   cmdalias_args.check_config = 0;
   cmdalias_args.init = 0;
-  cmdalias_args.debug = 0;
+  cmdalias_args.expend = 0;
+  cmdalias_args.complete = NULL;
 
   opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 
@@ -141,7 +193,10 @@ int main(int argc, char **argv) {
       cmdalias_args.config_file = optarg;
       break;
     case 'd':
-      cmdalias_args.debug = 1;
+      cmdalias_args.expend = 2;
+      break;
+    case 'e':
+      cmdalias_args.expend = 1;
       break;
     case 'h': /* fall-through is intentional */
     case '?':
@@ -159,7 +214,11 @@ int main(int argc, char **argv) {
       } else if (strcmp("init", longOpts[longIndex].name) == 0) {
         cmdalias_args.init = 1;
       } else if (strcmp("debug", longOpts[longIndex].name) == 0) {
-        cmdalias_args.debug = 1;
+        cmdalias_args.expend = 2;
+      } else if (strcmp("expend", longOpts[longIndex].name) == 0) {
+        cmdalias_args.expend = 1;
+      } else if (strcmp("complete", longOpts[longIndex].name) == 0) {
+        cmdalias_args.complete = optarg ? optarg : "bash";
       }
       break;
     default:
@@ -178,11 +237,21 @@ int main(int argc, char **argv) {
     cmdalias_bash_init(cmdalias_args.config_file);
   }
 
+  if (cmdalias_args.complete) {
+    if (strcmp("bash", cmdalias_args.complete) == 0) {
+      cmdalias_complete_bash(cmdalias_args.config_file);
+    } else {
+      fprintf(stderr, "Unsupported shell type \"%s\"\n",
+              cmdalias_args.complete);
+      exit(EXIT_FAILURE);
+    }
+  }
+
   if (0 == argc - optind) {
     display_usage();
     exit(EXIT_SUCCESS);
   }
 
   exit(cmdalias(cmdalias_args.config_file, argc - optind, argv + optind,
-                cmdalias_args.debug));
+                cmdalias_args.expend));
 }
