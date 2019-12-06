@@ -74,8 +74,9 @@ char *config_get_current_filename(void) {
 
 %}
 
-%x IN_STRING
+%x IN_DQUOTE
 %x IN_SUBCMD
+%x IN_SQUOTE
 
 NAME 		[-_0-9A-Za-z]+
 WHITESPACE 	[ \t\r\n]+
@@ -90,7 +91,8 @@ ANYCHAR    	.
 
 
 <INITIAL><<EOF>>		{ if (!config_popfile()) yyterminate(); }
-<INITIAL>\"             { string_buf[0] = '\0'; BEGIN(IN_STRING); }
+<INITIAL>\"             { string_buf[0] = '\0'; BEGIN(IN_DQUOTE); }
+<INITIAL>'              { string_buf[0] = '\0'; BEGIN(IN_SQUOTE); }
 <INITIAL>`              { string_buf[0] = '\0'; BEGIN(IN_SUBCMD); }
 <INITIAL>INCLUDE		{ return T_INCLUDE; }
 <INITIAL>{NAME}			{ yylval.str = strdup(yytext); return T_NAME; }
@@ -99,8 +101,8 @@ ANYCHAR    	.
 <INITIAL>{TOKENS}		{ return yytext[0]; }
 <INITIAL>{ANYCHAR}		{ yyerror(NULL, "Unexpected character in input: '%c' (ASCII=%d) state=%d", yytext[0], yytext[0], YYSTATE); exit(EXIT_FAILURE); }
 
-<IN_STRING,IN_SUBCMD><<EOF>>  { yyerror(NULL, "Unterminated string"); exit(EXIT_FAILURE); }
-<IN_STRING>[^\\"$]+	{
+<IN_DQUOTE,IN_SUBCMD><<EOF>>  { yyerror(NULL, "Unterminated string"); exit(EXIT_FAILURE); }
+<IN_DQUOTE>[^\\"$]+	{
 	if (yyleng + string_size > BUFFER_SIZE) {
 		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
@@ -109,7 +111,16 @@ ANYCHAR    	.
 	string_size += yyleng;
 	string_buf_ptr += yyleng;
 }
-<IN_STRING>${NAME} {
+<IN_SQUOTE>[^\\']+ {
+	if (yyleng + string_size > BUFFER_SIZE) {
+		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
+		exit(EXIT_FAILURE);
+	}
+	strncpy(string_buf_ptr, yytext, BUFFER_SIZE - string_size);
+	string_size += yyleng;
+	string_buf_ptr += yyleng;
+}
+<IN_DQUOTE>${NAME} {
 	char *env = getenv(yytext+1);
 	if (env) {
 		yytext = env;
@@ -123,7 +134,7 @@ ANYCHAR    	.
 	string_size += yyleng;
 	string_buf_ptr += yyleng;
 }
-<IN_STRING>\$ {
+<IN_DQUOTE>\$ {
 	if (yyleng + 1 > BUFFER_SIZE) {
 		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
@@ -132,7 +143,7 @@ ANYCHAR    	.
 	string_size++;
 	string_buf_ptr++;
 }
-<IN_STRING>\\.     {
+<IN_DQUOTE,IN_SQUOTE>\\.     {
 	if (yyleng + 1 > BUFFER_SIZE) {
 		yyerror(NULL, "String too long max cmd string buffer size is %d", BUFFER_SIZE);
 		exit(EXIT_FAILURE);
@@ -141,7 +152,14 @@ ANYCHAR    	.
 	string_size++;
 	string_buf_ptr++;
 }
-<IN_STRING>\" 		{
+<IN_DQUOTE>\" 		{
+	BEGIN(INITIAL);
+	yylval.str = strndup(string_buf, string_size);
+	string_buf_ptr = string_buf;
+	string_size = 0;
+	return T_STR;
+}
+<IN_SQUOTE>\'       {
 	BEGIN(INITIAL);
 	yylval.str = strndup(string_buf, string_size);
 	string_buf_ptr = string_buf;
