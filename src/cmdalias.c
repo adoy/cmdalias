@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "bash_autocomplete.c"
@@ -130,7 +131,7 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
 
     if (1 == debug) {
       for (int i = 0; i < result->argc - 1; i++) {
-        fprintf(stdout, result->argv[i]);
+        fprintf(stdout, result->argv[i] ? result->argv[i] : "|");
         if (i < result->argc - 2) {
           fprintf(stdout, " ");
         }
@@ -139,14 +140,48 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
       exit_status = EXIT_SUCCESS;
     } else if (2 == debug) {
       fprintf(stdout, "Executing:\n");
-      for (int i = 0; i < result->argc - 1; i++) {
-        fprintf(stdout, "\t[%d] %s\n", i, result->argv[i]);
+      for (int i, j = 0; i < result->argc - 1; i++) {
+        if (NULL != result->argv[i]) {
+          fprintf(stdout, "\t[%d] %s\n", j, result->argv[i]);
+          j++;
+        } else {
+          j = 0;
+          fprintf(stdout, " |\n");
+        }
       }
       exit_status = EXIT_SUCCESS;
     } else {
-      execvp(result->argv[0], result->argv);
-      fprintf(stderr, "cmdalias: %s: %s\n", result->argv[0], strerror(errno));
-      exit_status = EXIT_FAILURE;
+      int index = 0;
+      int pipefd[2];
+      int fd_in = STDIN_FILENO;
+
+      for (int i = 0; i < result->argc; i++) {
+        if (NULL == result->argv[i]) {
+          pipe(pipefd);
+          // 1 = write end of the pipe
+          // 0 = read end of the pipe
+
+          if (fork() == 0) {
+            dup2(fd_in, STDIN_FILENO);
+            if (i < result->argc - 1) {
+              dup2(pipefd[1], STDOUT_FILENO);
+            }
+            close(pipefd[0]);
+
+            execvp(result->argv[index], result->argv + index);
+            fprintf(stderr, "cmdalias: %s: %s\n", result->argv[index],
+                    strerror(errno));
+            exit(EXIT_FAILURE);
+          }
+
+          wait(NULL);
+
+          close(pipefd[1]);
+          fd_in = pipefd[0];
+
+          index = i + 1;
+        }
+      }
     }
     free(result);
   } else {

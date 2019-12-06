@@ -190,7 +190,7 @@ alias_list:
 ;
 
 alias:
-		alias_name_list '=' is_cmd string_list_or_subcmd ';' {
+		alias_name_list '=' is_cmd cmd_args_or_empty ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		      = $1;
 			$$->is_cmd		      = $3;
@@ -199,7 +199,7 @@ alias:
 			$$->sub_alias_list    = NULL;
 			$$->global_alias_list = NULL;
 		}
-	|	alias_name_list '=' is_cmd string_list_or_subcmd '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
+	|	alias_name_list '=' is_cmd cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			$$ = (alias *) malloc(sizeof(alias));
 			$$->names		      = $1;
 			$$->is_cmd		      = $3;
@@ -250,25 +250,28 @@ string_or_subcmd:
 	}
 	|	T_NAME
 	|	T_CMD {
-	FILE *fp;
-	char res[1035];
+		FILE *fp;
+		char res[1035];
 
-	fp = popen($1, "r");
-	free($1);
+		fp = popen($1, "r");
+		free($1);
 
-	if (fp == NULL) {
-		exit(EXIT_FAILURE);
+		if (fp == NULL) {
+			exit(EXIT_FAILURE);
+		}
+
+		if (fgets(res, sizeof(res)-1, fp) == NULL) {
+			yyerror(NULL, "Error while fetching result\n");
+		}
+
+		pclose(fp);
+
+		rtrim(res);
+		$$ = strdup(res);
 	}
-
-	if (fgets(res, sizeof(res)-1, fp) == NULL) {
-		yyerror(NULL, "Error while fetching result\n");
+	| '|' {
+		$$ = NULL;
 	}
-
-	pclose(fp);
-
-	rtrim(res);
-	$$ = strdup(res);
-}
 ;
 
 %%
