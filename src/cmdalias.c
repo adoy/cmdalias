@@ -101,7 +101,7 @@ static void cmdalias_complete_bash(const char *configFile) {
     while (current_cmd) {
       name_aliases = current_cmd->command->name_aliases;
       if (!name_aliases) {
-        fprintf(stdout, "complete -o default-F _cmdalias %s;\n",
+        fprintf(stdout, "complete -o default -F _cmdalias %s;\n",
                 current_cmd->command->name);
 
       } else {
