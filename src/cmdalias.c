@@ -95,9 +95,9 @@ static void cmdalias_complete_bash(const char *configFile) {
 
   if (config_load(configFile, &commands)) {
 
+    command_list *current_cmd = commands;
     fprintf(stdout, "%.*s\n", autocomplete_bash_len, autocomplete_bash);
 
-    command_list *current_cmd = commands;
     while (current_cmd) {
       name_aliases = current_cmd->command->name_aliases;
       if (!name_aliases) {
