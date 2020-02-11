@@ -131,7 +131,7 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
 
     if (1 == debug) {
       for (int i = 0; i < result->argc - 1; i++) {
-        fprintf(stdout, result->argv[i] ? result->argv[i] : "|");
+        fprintf(stdout, "%s", result->argv[i] ? result->argv[i] : "|");
         if (i < result->argc - 2) {
           fprintf(stdout, " ");
         }
