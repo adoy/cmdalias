@@ -140,7 +140,7 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
       exit_status = EXIT_SUCCESS;
     } else if (2 == debug) {
       fprintf(stdout, "Executing:\n");
-      for (int i, j = 0; i < result->argc - 1; i++) {
+      for (int i = 0, j = 0; i < result->argc - 1; i++) {
         if (NULL != result->argv[i]) {
           fprintf(stdout, "\t[%d] %s\n", j, result->argv[i]);
           j++;
