@@ -106,7 +106,7 @@ static void rtrim(char* s) {
 %token <str>  T_CMD  "Command (T_CMD)"
 %token T_INCLUDE     "Include (T_INCLUDE)"
 
-%type <str> string_or_subcmd
+%type <str> string_or_subcmd string
 %type <str_list> string_list_or_subcmd alias_name_list cmd_args_or_empty
 %type <alias> alias
 %type <alias_list> global_alias_list_or_empty alias_list_or_empty alias_list
@@ -136,7 +136,7 @@ include:
 ;
 
 command:
-		alias_name_list '=' T_NAME cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
+		alias_name_list '=' string cmd_args_or_empty '{' global_alias_list_or_empty alias_list_or_empty '}' cmd_args_or_empty ';' {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
@@ -160,7 +160,7 @@ command:
 
 			*cmds = command_list_append(*cmds, cmd);
 		}
-	|	alias_name_list '=' T_NAME cmd_args_or_empty ';' {
+	|	alias_name_list '=' string cmd_args_or_empty ';' {
 			command_list **cmds = (command_list **) commands;
 			command *cmd = (command *) malloc(sizeof(command));
 			cmd->name = $3;
@@ -272,6 +272,11 @@ string_or_subcmd:
 	| '|' {
 		$$ = NULL;
 	}
+;
+
+string:
+		T_STR
+	|	T_NAME
 ;
 
 %%
