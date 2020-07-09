@@ -86,5 +86,6 @@ With this `kubectl` alias I can use commands like
 | `kubectl config use-context production` | `k uc production` |
 | `kubectl get pod --all-namespaces` | `k g p -a` |
 | `kubectl apply -R -f somefolder` | `k a -f somefolder` |
+| ``kubectl config set-context `kubectl config current-context` --namespace production`` | `k ns production` |
 
 
