@@ -122,6 +122,24 @@ static void cmdalias_complete_bash(const char *configFile) {
   exit(exit_status);
 }
 
+char *escape(char *string) {
+  int length = strlen(string);
+  char *escaped = (char *)malloc(2 * length + 1);
+  char *ptr = escaped;
+  char *c = string;
+
+  do {
+    if ('\'' == *c) {
+      *ptr++ = '\\';
+    }
+    *ptr++ = *c;
+  } while (*(c++));
+
+  *ptr++ = '\0';
+
+  return escaped;
+}
+
 static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
   int exit_status;
   command_list *commands = NULL;
@@ -131,7 +149,13 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
 
     if (1 == debug) {
       for (int i = 0; i < result->argc - 1; i++) {
-        fprintf(stdout, "%s", result->argv[i] ? result->argv[i] : "|");
+        if (result->argv[i]) {
+          char *escaped = escape(result->argv[i]);
+          fprintf(stdout, "'%s'", escaped);
+          free(escaped);
+        } else {
+          fprintf(stdout, "|");
+        }
         if (i < result->argc - 2) {
           fprintf(stdout, " ");
         }
