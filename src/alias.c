@@ -133,7 +133,9 @@ alias_substitution_result *alias_substitution(command_list *commands, int argc,
       add_str_list_to_result(result, cmd->after_args);
     }
   } else {
-    add_str_to_result(result, argv[0]);
+    for (int i = 0; i < argc; i++) {
+      add_str_to_result(result, argv[i]);
+    }
   }
 
   add_str_to_result(result, NULL);
