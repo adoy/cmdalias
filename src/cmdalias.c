@@ -178,6 +178,7 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
       int index = 0;
       int pipefd[2];
       int fd_in = STDIN_FILENO;
+      int nbp = 0;
 
       for (int i = 0; i < result->argc; i++) {
         if (NULL == result->argv[i]) {
@@ -198,13 +199,16 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
             exit(EXIT_FAILURE);
           }
 
-          wait(NULL);
-
+          nbp++;
           close(pipefd[1]);
           fd_in = pipefd[0];
 
           index = i + 1;
+
         }
+      }
+      for (int i = 0; i < nbp; i++) {
+        wait(NULL);
       }
     }
     free(result);
