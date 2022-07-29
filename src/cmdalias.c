@@ -30,7 +30,7 @@ static void display_usage() {
 
 static void display_version() {
   puts("cmdalias " CMDALIAS_VERSION
-       " (c)2017-2019 Pierrick Charron - Adoy.net");
+       " (c)2017-2022 Pierrick Charron - Adoy.net");
   exit(EXIT_FAILURE);
 }
 
@@ -204,7 +204,6 @@ static int cmdalias(const char *configFile, int argc, char **argv, int debug) {
           fd_in = pipefd[0];
 
           index = i + 1;
-
         }
       }
       for (int i = 0; i < nbp; i++) {
