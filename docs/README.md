@@ -1,6 +1,6 @@
 # What is cmdalias
 
-`cmdalias` is an nested alias tool that I created for myself and inspired from the [git-config alias](https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases) mechanism. It lets you create context aware aliases and nested aliases (subaliases).
+`cmdalias` is an nested alias tool that I created for myself and inspired from the [git-config alias](https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases) mechanism. It lets you create context aware aliases and nested aliases (subaliases / multi word alias).
 
 Why? I was tired of using too many keystrokes for commands that I'm using everyday in my shell. For example, with docker, I often want to list images or clean containers and images.
 
@@ -15,9 +15,6 @@ alias: d i
 
 docker network ls
 alias: d n l
-
-docker container prune --force; docker rmi $(docker images -f 'dangling=true' -q)
-alias: d clear
 ```
 
 With traditional aliases, you can only have one level of depth within your short names. With cmdalias, you can easily nest short names and transform `kubectl get pod` to `k g p`. More examples will be provided below.
@@ -35,7 +32,7 @@ make && make install
 
 ## Usage
 
-##### Configure your commands
+### Configure your commands
 
 Choose your configuration method, either:
 
@@ -53,17 +50,15 @@ $HOME/
 │   │   utilities
 ```
 
-##### Run
+### Run
 
 To **dry-run** the aliases that will be created run `cmdalias -i`, they will be printed to stdout. Moreover, you can check if the syntax you wrote is correct by running `cmdalias --check-config`
 
-When satisfied, run the following or 
+When satisfied, run the following  
 
 ```bash
 source <(cmdalias -i)
 ```
-
-If you execute the command `alias`, it will display the aliases that were created.
 
 If you want **cmdalias** to create the aliases each time you login, add it to the configuration of your favorite command line interpreter.
 
@@ -73,13 +68,13 @@ echo "source <(cmdalias -i)" >> ~/.bashrc
 
 ## Configuration examples
 
-##### Single alias
+### Single alias
 
 ```
 d = docker;
 ```
 
-##### Nested/subalias
+### Nested/subalias
 
 ```
 d = docker {
@@ -90,7 +85,7 @@ d = docker {
 You can add command line arguments and options to aliases and subaliases
 
 ```
-//to pipe copy, for example: echo "bar" | copy
+// to pipe copy, for example: echo "bar" | copy
 copy = xclip -selection c;
 
 d = docker {
@@ -99,29 +94,7 @@ d = docker {
 };
 ```
 
-##### Sub shell execution
-```
-random-password = sh -c "dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev";
-
-// works for subaliases too
-myutils = echo "MyUtils" {
-    random-password = !sh -c "dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev";
-};
-```
-
-This would give you the possibility to execute `random-password`, `myutils` and `myutils random-password`. Note that a `!` is required for subaliases that want to execute shell commands.
-
-##### Passing environment variables
-
-```
-//in shell:
-export DIGITALOCEAN_ACCESS_TOKEN=your_token
-
-//in .cmdalias config
-doctl = docker run --rm -e "DIGITALOCEAN_ACCESS_TOKEN=$DIGITALOCEAN_ACCESS_TOKEN" doctl;
-```
-
-##### Wildcard subalias using `*`
+### Wildcard subalias using `*`
 
 Let's take the kubernetes command to list a single pod in a JSON output format
 ```
@@ -142,11 +115,11 @@ k = kubectl {
 
 And be able to execute `k g p -j`.
 
-The `*` basically means that the subalias is permitted at any level of the command, except its root alias.
+The `*` basically means that the subalias is permitted at any level of the command.
 
 ## More complex configuration examples
 
-##### Docker
+### Docker
 
 ```
 d = docker {
@@ -159,10 +132,10 @@ d = docker {
     n = network {
         l = ls;
     };
-    ps = ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}";
     v = volume {
-        ls  = !sh -c "docker volume ls | grep -v docker | grep -v data | grep -v DRIVER | gawk '{ print $2 }'";
+        ls  = ls | grep -v docker | grep -v nuglif | grep -v DRIVER | gawk '{ print $2 }';
     };
+
     clean = !sh -c "docker container prune --force; docker rmi $(docker images -f 'dangling=true' -q)";
 };
 ```
