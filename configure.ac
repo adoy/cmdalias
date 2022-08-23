@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([cmdalias], [1-0.dev], [pierrick@adoy.net])
+AC_INIT([cmdalias], [1.0.0-dev], [pierrick@adoy.net])
 AC_CONFIG_SRCDIR([src/cmdalias.c])
 AC_CONFIG_HEADERS([include/config.h])
 
