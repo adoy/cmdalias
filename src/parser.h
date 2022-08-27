@@ -62,7 +62,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 96 "src/parser.y" /* yacc.c:1909  */
+#line 91 "src/parser.y" /* yacc.c:1909  */
 
 	char *str;
 	struct string_list_t *str_list;

@@ -43,17 +43,18 @@ static int is_dir(const char *path) {
 static int config_pushdir(const char *dirname) {
 	struct dirent *dent;
 	DIR *dir;
-	char fn[FILENAME_MAX];
+	char path[PATH_MAX];
 	int len = strlen(dirname);
+	int result = 0;
 
-	if (len >= FILENAME_MAX - 1) {
+	if (len >= PATH_MAX - 1) {
 		debug_msg("Directory name to long");
 
 		return 0;
 	}
 
-	strcpy(fn, dirname);
-	fn[len++] = '/';
+	strncpy(path, dirname, len);
+	path[len++] = '/';
 
 	if (!(dir = opendir(dirname))) {
 		debug_msg("Can't open directory: %s\n", dirname);
@@ -63,21 +64,15 @@ static int config_pushdir(const char *dirname) {
 
 	while ((dent = readdir(dir))) {
 		if (dent->d_name[0] == '.') continue;
-		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) continue;
 
-		strncpy(fn + len, dent->d_name, FILENAME_MAX - len);
+		strncpy(path + len, dent->d_name, PATH_MAX - len);
 
-		if (is_dir(fn)) {
-			config_pushdir(fn);
-			continue;
-		}
-
-		config_pushfile(fn);
+		result |= is_dir(path) ? config_pushdir(path) : config_pushfile(path);
 	}
 
-	if (dir) closedir(dir);
+	closedir(dir);
 
-	return 1;
+	return result;
 }
 
 static void rtrim(char* s) {
