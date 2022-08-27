@@ -8,8 +8,8 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 AC_PROG_CC
-AC_PROG_YACC
 AC_PROG_LEX
+AC_PROG_YACC
 
 # Checks for libraries.
 
@@ -18,7 +18,6 @@ AC_FUNC_ALLOCA
 AC_CHECK_HEADERS([inttypes.h libintl.h malloc.h stddef.h stdlib.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_INT8_T
@@ -28,10 +27,11 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Checks for library functions.
+AC_FUNC_FORK
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([memset strdup])
+AC_CHECK_FUNCS([dup2 memset strdup strerror strndup])
 
 AC_ARG_ENABLE([debug], AS_HELP_STRING([--enable-debug], [Enable the debug mode]))
 AC_MSG_CHECKING([if the debug mode is enabled])
