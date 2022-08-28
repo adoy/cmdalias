@@ -30,6 +30,8 @@ void yyerror(command_list **cmds, const char *s, ...) {
 	fflush(stderr);
 }
 
+static int config_push(const char *path);
+
 static int is_dir(const char *path) {
 	struct stat st;
 
@@ -67,12 +69,16 @@ static int config_pushdir(const char *dirname) {
 
 		strncpy(path + len, dent->d_name, PATH_MAX - len);
 
-		result |= is_dir(path) ? config_pushdir(path) : config_pushfile(path);
+		result |= config_push(path);
 	}
 
 	closedir(dir);
 
 	return result;
+}
+
+static int config_push(const char *path) {
+	return is_dir(path) ? config_pushdir(path) : config_pushfile(path);
 }
 
 static void rtrim(char* s) {
@@ -123,7 +129,7 @@ command_list:
 
 include:
 		T_INCLUDE T_STR ';' {
-			if (!(is_dir($2) ? config_pushdir($2) : config_pushfile($2))) {
+			if (!config_push($2)) {
 				yyerror(NULL, "Unable to load %s", $2);
 			}
 			free($2);
@@ -279,21 +285,17 @@ string:
 int config_load(const char *path, command_list **commands) {
 
 	char *buffer = NULL;
-	int r =  1;
+	int res =  1;
 
 	if (!path) {
-		buffer = (char *) malloc(sizeof(char) * 255);
+		buffer = (char *) malloc(sizeof(char) * PATH_MAX);
 		snprintf(buffer, 255, "%s/.cmdalias", getenv("HOME"));
 		path = buffer;
 	}
 
 	*commands = NULL;
 
-	if (!(is_dir(path) ? config_pushdir(path) : config_pushfile(path))) {
-		r = 0;
-	} else if (yyparse(commands)) {
-		r = 0;
-	}
+	res = config_push(path) && !yyparse(commands);
 
 	yylex_destroy();
 
@@ -301,5 +303,5 @@ int config_load(const char *path, command_list **commands) {
 		free(buffer);
 	}
 
-	return r;
+	return res;
 }
