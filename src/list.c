@@ -1,6 +1,15 @@
 #include "cmdalias.h"
 #include <stdlib.h>
 
+static void string_list_free_all(string_list *list) {
+  string_list *item;
+  while ((item = list)) {
+    list = item->next;
+    free(item->str);
+    free(item);
+  }
+}
+
 static void free_alias(alias *a) {
   string_list_free_all(a->names);
   string_list_free_all(a->substitutes);
@@ -43,14 +52,6 @@ string_list *string_list_append(string_list *list, char *str) {
   return new_item;
 }
 
-void string_list_free_all(string_list *list) {
-  string_list *item;
-  while ((item = list)) {
-    list = item->next;
-    free(item->str);
-    free(item);
-  }
-}
 
 alias_list *alias_list_append(alias_list *list, alias *a) {
   alias_list *new_item = (alias_list *)malloc(sizeof(alias_list));

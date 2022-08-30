@@ -49,7 +49,6 @@ typedef struct command_list_t {
 } command_list;
 
 string_list *string_list_append(string_list *, char *);
-void string_list_free_all(string_list *);
 
 alias_list *alias_list_append(alias_list *, alias *);
 void alias_list_free_all(alias_list *);
