@@ -55,7 +55,7 @@ static int config_pushdir(const char *dirname) {
 		return 0;
 	}
 
-	strncpy(path, dirname, len);
+	strncpy(path, dirname, PATH_MAX);
 	path[len++] = '/';
 
 	if (!(dir = opendir(dirname))) {
