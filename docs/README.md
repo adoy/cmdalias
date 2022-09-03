@@ -142,7 +142,7 @@ d = docker {
 
 With this `docker` alias you can use commands like:
 
-| Real command | Short command using cmdalias |
+| Short command using cmdalias | Real command |
 | --- | --- |
 | `d i` | `docker images` |
 | `d n l` | `docker network ls` |
