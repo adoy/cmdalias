@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <ctype.h>
-
+#include <limits.h>
 
 #include "cmdalias.h"
 #include "lexer.h"
